@@ -1,0 +1,91 @@
+{
+	"name": "calico-colors",
+	"description": "Calico Colors - A Webview View API Sample",
+	"version": "0.0.1",
+	"publisher": "vscode-samples",
+	"private": true,
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Microsoft/vscode-extension-samples"
+	},
+	"engines": {
+		"vscode": "^1.50.0"
+	},
+	"extensionKind": [
+		"ui",
+		"workspace"
+	],
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"onView:calicoColors.colorsView",
+		"onCommand:calicoColors.addColor",
+		"onCommand:calicoColors.clearColors"
+	],
+	"main": "./out/extension.js",
+	"contributes": {
+		"viewsContainers": {
+			"panel": [
+				{
+					"id": "my-fancy-view",
+					"title": "Minibuffer",
+					"icon": "fancy.icon"
+				}
+			]
+		},
+		"views": {
+			"my-fancy-view": [
+				{
+					"type": "webview",
+					"id": "calicoColors.colorsView",
+					"name": "File Open"
+				}
+			]
+		},
+		"commands": [
+			{
+				"command": "calicoColors.addColor",
+				"category": "Calico Colors",
+				"title": "Add Color"
+			},
+			{
+				"command": "calicoColors.clearColors",
+				"category": "Calico Colors",
+				"title": "Clear Colors",
+				"icon": "$(clear-all)"
+			}
+		],
+		"menus": {
+			"view/title": [
+				{
+					"command": "calicoColors.clearColors",
+					"group": "navigation",
+					"when": "view == calicoColors.colorsView"
+				}
+			]
+		}
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./",
+		"lint": "eslint \"src/**/*.ts\"",
+		"watch": "tsc -w -p ./"
+	},
+	"devDependencies": {
+		"@types/react": "^18.0.25",
+		"@types/react-dom": "^18.0.8",
+		"@types/vscode": "^1.50.0",
+		"@typescript-eslint/eslint-plugin": "^5.42.0",
+		"@typescript-eslint/parser": "^5.42.0",
+		"@vitejs/plugin-react": "^2.2.0",
+		"eslint": "^8.26.0",
+		"typescript": "^4.8.4",
+		"vite": "^3.2.3"
+	},
+	"dependencies": {
+		"react": "^18.2.0",
+		"react-dom": "^18.2.0"
+	}
+}
