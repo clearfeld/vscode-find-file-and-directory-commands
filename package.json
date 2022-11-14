@@ -23,7 +23,9 @@
     "onView:calicoColors.colorsView",
     "onCommand:calicoColors.addColor",
     "onCommand:calicoColors.clearColors",
-    "onCommand:calicoColors.test"
+    "onCommand:calicoColors.test",
+    "onCommand:calicoColors.catCoding",
+    "onCommand:calicoColors.catTest"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -32,7 +34,8 @@
         {
           "id": "my-fancy-view",
           "title": "Minibuffer",
-          "icon": "fancy.icon"
+          "icon": "fancy.icon",
+          "when": "clearfeld-minibuffer-find-file.active"
         }
       ]
     },
@@ -41,7 +44,8 @@
         {
           "type": "webview",
           "id": "calicoColors.colorsView",
-          "name": "File Open"
+          "name": "File Open",
+          "when": "clearfeld-minibuffer-find-file.active"
         }
       ]
     },
@@ -50,6 +54,16 @@
         "command": "calicoColors.addColor",
         "category": "Calico Colors",
         "title": "Add Color"
+      },
+      {
+        "command": "calicoColors.catCoding",
+        "category": "Calico Colors",
+        "title": "Cat Coding"
+      },
+      {
+        "command": "calicoColors.catTest",
+        "category": "Calico Colors",
+        "title": "Cat Test"
       },
       {
         "command": "calicoColors.clearColors",

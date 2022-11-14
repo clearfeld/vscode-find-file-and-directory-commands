@@ -15,25 +15,27 @@ async function pickWorkspace(): Promise<string> {
   return targetWorkspaceFolder.uri.path;
 }
 
-async function pathToCurrentDirectory(): Promise<string> {
+async function pathToCurrentDirectory(): Promise<string | null> {
   const currentEditor = vscode.window.activeTextEditor;
   if (currentEditor) {
     return Path.dirname(currentEditor.document.uri.path);
   }
 
+  return null;
   // return Path.dirname(currentEditor.document.uri.path);
-  return pickWorkspace();
+  // return pickWorkspace();
 }
 
-async function pathToCurrentWorkspace(): Promise<string> {
+async function pathToCurrentWorkspace(): Promise<string | null> {
   const currentEditor = vscode.window.activeTextEditor;
   if (currentEditor) {
     return vscode.workspace.getWorkspaceFolder(currentEditor.document.uri).uri
       .path;
   }
 
+  return null;
   // return Path.dirname(currentEditor.document.uri.path);
-  return pickWorkspace();
+  // return pickWorkspace();
 }
 
 export function activate(context: vscode.ExtensionContext) {
@@ -58,16 +60,69 @@ export function activate(context: vscode.ExtensionContext) {
     })
   );
 
+  context.subscriptions.push(
+    vscode.commands.registerCommand("calicoColors.catCoding", async () => {
+      provider.createCatCodingView();
+
+      if (!provider._panel) {
+        return;
+      }
+      vscode.commands.executeCommand(
+        "setContext",
+        "clearfeld-minibuffer-find-file.active",
+        true
+      );
+
+      let defaultDir = await pathToCurrentDirectory();
+      defaultDir += Path.sep;
+      console.log("defaultDir - ", defaultDir);
+      let dir = null;
+      if (defaultDir !== null) {
+        dir = vscode.Uri.file(defaultDir);
+        defaultDir = defaultDir.replaceAll("/", "\\");
+      }
+
+      let cmd = "cd && dir /o";
+
+      // enable this to get dir of active editor
+      // if (dir !== null) {
+      //   // console.log(defaultDir);
+      //   let dirx = defaultDir?.substring(1, defaultDir.length - 1);
+      //   cmd = `cd ${dirx} && dir /o ${dirx}`;
+      //   console.log(cmd);
+      //   //cmd = cmd + " " + defaultDir?.substring(1, defaultDir.length - 1);
+      // }
+
+
+      cp.exec(cmd, (err: any, stdout: any, stderr: any) => {
+        console.log("stdout: " + stdout);
+        console.log("stderr: " + stderr);
+        if (err) {
+          console.log("error: " + err);
+        } else {
+          const result = stdout.split(/\r?\n/);
+          provider._panel?.webview.postMessage({
+            command: "refactor",
+            data: JSON.stringify(result),
+          });
+        }
+      });
+    })
+  );
+
   // Our new command
   context.subscriptions.push(
     vscode.commands.registerCommand("calico.test", async () => {
       if (!provider._view) {
         return;
       }
+      vscode.commands.executeCommand(
+        "setContext",
+        "clearfeld-minibuffer-find-file.active",
+        true
+      );
 
       provider._view.show(true);
-
-      vscode.commands.executeCommand("setContext", "clearfeld-minibuffer-find-file.active", true);
 
       let defaultDir = await pathToCurrentDirectory();
       defaultDir += Path.sep;
@@ -102,14 +157,133 @@ export function activate(context: vscode.ExtensionContext) {
       });
     })
   );
+
+  // Our new command
+  context.subscriptions.push(
+    vscode.commands.registerCommand("calicoColors.catTest", async () => {
+      if (!provider._panel) {
+        return;
+      }
+      vscode.commands.executeCommand(
+        "setContext",
+        "clearfeld-minibuffer-find-file.active",
+        true
+      );
+
+      // provider._panel.show(true);
+
+      // let defaultDir = await pathToCurrentDirectory();
+      // defaultDir += Path.sep;
+      // let dir = vscode.Uri.file(defaultDir);
+
+      // this.rgProc = cp.spawn(rgPath, rgArgs.args, { cwd: rootFolder });
+
+      cp.exec("cd && dir /o", (err: any, stdout: any, stderr: any) => {
+        // cp.exec(`cd && ls -al --group-directories-first C:\\ | awk '{print $9 "\`" $1 "\`" $5 "\`" $6" "$7" "$8}'`, (err: any, stdout: any, stderr: any) => {
+        console.log("stdout: " + stdout);
+        console.log("stderr: " + stderr);
+        if (err) {
+          console.log("error: " + err);
+        } else {
+          // get current theme properties color
+          // respect theme color choice
+          // const color = new vscode.ThemeColor('badge.background');
+
+          const result = stdout.split(/\r?\n/);
+          provider._panel?.webview.postMessage({
+            command: "refactor",
+            data: JSON.stringify(result),
+          });
+        }
+      });
+
+      // Send a message to our webview.
+      // You can send any JSON serializable data.
+      // provider._panel.webview.postMessage({
+      //   command: "refactor",
+      //   data: dir,
+      // });
+    })
+  );
 }
 
 class ColorsViewProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = "calicoColors.colorsView";
 
   public _view?: vscode.WebviewView;
+  public _panel?: vscode.WebviewPanel;
 
-  constructor(private readonly _extensionUri: vscode.Uri) {}
+  constructor(
+    private readonly _extensionUri: vscode.Uri,
+    private readonly _myUri: vscode.Uri
+  ) {}
+
+  public createCatCodingView() // context: vscode.WebviewViewResolveContext, // webviewView: vscode.WebviewView,
+  // _token: vscode.CancellationToken
+  {
+    // Create and show panel
+    // let vuri = new vscode.Uri;
+    this._panel = vscode.window.createWebviewPanel(
+      "calicoColors.colorsView",
+      // "my-fancy-view",// this.viewType, // "catCoding",
+      "Minibuffer: File Open",
+      vscode.ViewColumn.One,
+      {
+        // Allow scripts in the webview
+        enableScripts: true,
+
+        localResourceRoots: [
+          this._extensionUri,
+          vscode.Uri.joinPath(
+            this._extensionUri,
+            "minibuffer-find-file/dist",
+            "minibuffer-find-file/dist/assets"
+          ),
+        ],
+      }
+    );
+
+    // And set its HTML content
+    this._panel.webview.html = this._getHtmlForWebview(this._panel.webview);
+
+    this._panel.webview.onDidReceiveMessage((data) => {
+      switch (data.type) {
+        case "OpenFile":
+          {
+            console.log("data.value - ", data.value);
+            vscode.workspace.openTextDocument(data.value).then((document) => {
+              vscode.window.showTextDocument(document);
+            });
+          }
+          break;
+
+        case "Enter": {
+          cp.exec(
+            `dir /o "${data.value}"`,
+            (err: any, stdout: any, stderr: any) => {
+              // console.log("stderr: " + stderr);
+              if (err) {
+                console.log("stderr - error: " + err);
+              } else {
+                console.log("stdout - " + stdout);
+                // get current theme properties color
+                // respect theme color choice
+                // const color = new vscode.ThemeColor('badge.background');
+
+                const result = stdout.split(/\r?\n/);
+                this._panel?.webview.postMessage({
+                  command: "directory_change",
+                  data: JSON.stringify(result),
+                });
+              }
+            }
+          );
+
+          break;
+        }
+      }
+    });
+  }
 
   public resolveWebviewView(
     webviewView: vscode.WebviewView,
@@ -146,11 +320,9 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
         case "OpenFile":
           {
             console.log("data.value - ", data.value);
-            vscode.workspace
-              .openTextDocument(data.value)
-              .then((document) => {
-                vscode.window.showTextDocument(document);
-              });
+            vscode.workspace.openTextDocument(data.value).then((document) => {
+              vscode.window.showTextDocument(document);
+            });
           }
           break;
 
@@ -195,7 +367,7 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
     }
   }
 
-  private _getHtmlForWebview(webview: vscode.Webview) {
+  public _getHtmlForWebview(webview: vscode.Webview) {
     // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
     const scriptUri = webview.asWebviewUri(
       vscode.Uri.joinPath(
