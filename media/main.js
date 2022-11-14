@@ -76,8 +76,8 @@
         vscode.setState({ colors: colors });
     }
 
-    /** 
-     * @param {string} color 
+    /**
+     * @param {string} color
      */
     function onColorClicked(color) {
         vscode.postMessage({ type: 'colorSelected', value: color });

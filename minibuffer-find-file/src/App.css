@@ -1,41 +1,36 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+.clearfeld-minibuffer-find-file__input-line {
+  position: fixed;
+  top: 0;
+  width: 100%;
+
+  background-color: var(--vscode-editor-background);
+  color: var(--vscode-symbolIcon-variableForeground);
+
+  white-space: pre;
+
+  display: flex;
+  align-items: center;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.clearfeld-minibuffer-find-file__input {
+  background-color: transparent !important;
+  outline: none !important;
+  border: none !important;
+  margin: 0 !important;
+  padding: 2px 0px 4px 4px !important;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.clearfeld-minibuffer-find-file__results-wrapper {
+  padding-top: 2rem;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.clearfeld-minibuffer-find-file__result-row {
+  cursor: pointer;
+}
+.clearfeld-minibuffer-find-file__result-row:hover {
+  background-color: var(--vscode-editorWidget-background);
 }
 
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
+.clearfeld-minibuffer-find-file__result-current-selection {
+  background-color: var(--vscode-editorWidget-background);
 }
