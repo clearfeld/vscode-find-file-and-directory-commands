@@ -77,12 +77,17 @@ export function activate(context: vscode.ExtensionContext) {
       defaultDir += Path.sep;
       console.log("defaultDir - ", defaultDir);
       let dir = null;
-      if (defaultDir !== null) {
-        dir = vscode.Uri.file(defaultDir);
-        defaultDir = defaultDir.replaceAll("/", "\\");
-      }
 
       let cmd = "cd && dir /o";
+
+      if (defaultDir !== null) {
+        dir = vscode.Uri.file(defaultDir);
+        defaultDir = defaultDir.substr(1, defaultDir.length - 2);
+        defaultDir = defaultDir.replaceAll("/", "\\");
+        // cmd = `cd ${defaultDir} && dir /o`;
+        cmd = `dir /o ${defaultDir}`;
+      }
+      console.log("defaultDir - ", defaultDir);
 
       // enable this to get dir of active editor
       // if (dir !== null) {
@@ -92,7 +97,6 @@ export function activate(context: vscode.ExtensionContext) {
       //   console.log(cmd);
       //   //cmd = cmd + " " + defaultDir?.substring(1, defaultDir.length - 1);
       // }
-
 
       cp.exec(cmd, (err: any, stdout: any, stderr: any) => {
         console.log("stdout: " + stdout);
@@ -104,6 +108,7 @@ export function activate(context: vscode.ExtensionContext) {
           provider._panel?.webview.postMessage({
             command: "refactor",
             data: JSON.stringify(result),
+            directory: JSON.stringify(defaultDir),
           });
         }
       });
@@ -145,6 +150,7 @@ export function activate(context: vscode.ExtensionContext) {
           provider._view?.webview.postMessage({
             command: "refactor",
             data: JSON.stringify(result),
+            directory: null,
           });
         }
       });
@@ -218,8 +224,7 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
     private readonly _myUri: vscode.Uri
   ) {}
 
-  public createCatCodingView() // context: vscode.WebviewViewResolveContext, // webviewView: vscode.WebviewView,
-  // _token: vscode.CancellationToken
+  public createCatCodingView() // _token: vscode.CancellationToken // context: vscode.WebviewViewResolveContext, // webviewView: vscode.WebviewView,
   {
     // Create and show panel
     // let vuri = new vscode.Uri;
@@ -246,7 +251,7 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
     // And set its HTML content
     this._panel.webview.html = this._getHtmlForWebview(this._panel.webview);
 
-    this._panel.webview.onDidReceiveMessage((data) => {
+    this._panel.webview.onDidReceiveMessage(async (data) => {
       switch (data.type) {
         case "OpenFile":
           {
@@ -254,6 +259,20 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
             vscode.workspace.openTextDocument(data.value).then((document) => {
               vscode.window.showTextDocument(document);
             });
+          }
+          break;
+
+        case "CreateFile":
+          {
+            let buf = new Uint8Array();
+            let duri = vscode.Uri.file(data.directory + "\\" +  data.value);
+            let throw_away = await vscode.workspace.fs.writeFile(duri, buf);
+            const openPath = vscode.Uri.parse(duri);
+            vscode.workspace
+              .openTextDocument(openPath)
+              .then((document) => {
+                vscode.window.showTextDocument(document);
+              });
           }
           break;
 
@@ -323,6 +342,17 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
             vscode.workspace.openTextDocument(data.value).then((document) => {
               vscode.window.showTextDocument(document);
             });
+          }
+          break;
+
+        case "CreateFile":
+          {
+            console.log("data.value - ", data.value);
+            vscode.workspace
+              .openTextDocument("untitled:" + data.value)
+              .then((document) => {
+                vscode.window.showTextDocument(document);
+              });
           }
           break;
 

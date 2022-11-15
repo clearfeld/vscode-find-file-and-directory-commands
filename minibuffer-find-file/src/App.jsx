@@ -3,7 +3,8 @@ import reactLogo from "./assets/react.svg";
 import "./App.css";
 
 // unix command
-// ls -al --group-directories-first | awk '{print $9 "`" $1 "`" $5 "`" $6" "$7" "$8}'
+// ls -al --group-directories-first | tail -n +2 | awk '{print $9 "`" $1 "`" $5 "`" $6" "$7" "$8}'
+// parse out the strings with split("`");
 
 // TODO: shift enter should create file regardless of index choice
 
@@ -56,6 +57,16 @@ function App() {
 
           setIndexChoice(0);
 
+          console.log("Refactor event.data.directory - ", event.data.directory);
+          if (
+            event.data.directory !== null &&
+            event.data.directory !== undefined
+          ) {
+            let p = JSON.parse(event.data.directory);
+            console.log(p);
+            currentDir.current = JSON.parse(event.data.directory);
+          }
+
           let x = JSON.parse(event.data.data);
           setDirDataRaw(x);
           // console.log("Current Dir - ", currentDir);
@@ -70,6 +81,20 @@ function App() {
       case "directory_change":
         {
           setIndexChoice(0);
+
+          console.log(
+            "directory_change event.data.directory - ",
+            event.data.directory
+          );
+
+          if (
+            event.data.directory !== null &&
+            event.data.directory !== undefined
+          ) {
+            let p = JSON.parse(event.data.directory);
+            console.log(p);
+            currentDir.current = JSON.parse(event.data.directory);
+          }
 
           let x = JSON.parse(event.data.data);
           setDirDataRaw(x);
@@ -184,6 +209,21 @@ function App() {
       }
 
       let dl = dirDataFiltered[indexChoice];
+      if (dl === null || dl === undefined) {
+        // likely trying to create a new file
+        vscode.postMessage({
+          type: "CreateFile",
+          // value: currentDir,
+          value: iv,
+          directory: currentDir.current,
+          pick_type: "file",
+          // directory: currentDir.current + "\\bin"
+        });
+        // setIV("");
+        return;
+      }
+
+      // let dl = dirDataFiltered[indexChoice];
       // console.log(dl);
       let pick_type = "directory";
       if (dl.type === "file") {
