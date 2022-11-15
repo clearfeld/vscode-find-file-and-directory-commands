@@ -1,92 +1,60 @@
 {
-  "name": "calico-colors",
-  "description": "Calico Colors - A Webview View API Sample",
+  "name": "emacs-minibuffer-find-file-commands",
+  "description": "A port of the emacs minibuffer find file commands",
   "version": "0.0.1",
-  "publisher": "vscode-samples",
+  "publisher": "clearfeld",
   "private": true,
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Microsoft/vscode-extension-samples"
+    "url": "https://github.com/clearfeld/vscode-emacs-style-find-file-commands"
   },
   "engines": {
-    "vscode": "^1.50.0"
+    "vscode": "^1.73.0"
   },
-  "extensionKind": [
-    "ui",
-    "workspace"
-  ],
+  "extensionKind": [],
   "categories": [
     "Other"
   ],
   "activationEvents": [
-    "onView:calicoColors.colorsView",
-    "onCommand:calicoColors.addColor",
-    "onCommand:calicoColors.clearColors",
-    "onCommand:calicoColors.test",
-    "onCommand:calicoColors.catCoding",
-    "onCommand:calicoColors.catTest"
+    "onView:emacs.findFileView",
+    "onCommand:emacs.findFileEditor",
+    "onCommand:emacs.findFilePanel"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "viewsContainers": {
       "panel": [
         {
-          "id": "my-fancy-view",
+          "id": "emacs-minibuffer-find-file-view",
           "title": "Minibuffer",
           "icon": "fancy.icon",
-          "when": "clearfeld-minibuffer-find-file.active"
+          "when": "emacs.findFilePanel"
         }
       ]
     },
     "views": {
-      "my-fancy-view": [
+      "emacs-minibuffer-find-file-view": [
         {
           "type": "webview",
-          "id": "calicoColors.colorsView",
+          "id": "emacs.findFileView",
           "name": "File Open",
-          "when": "clearfeld-minibuffer-find-file.active"
+          "when": "emacs.findFilePanel"
         }
       ]
     },
     "commands": [
       {
-        "command": "calicoColors.addColor",
-        "category": "Calico Colors",
-        "title": "Add Color"
+        "command": "emacs.findFileEditor",
+        "category": "Emacs",
+        "title": "Find File (Editor)"
       },
       {
-        "command": "calicoColors.catCoding",
-        "category": "Calico Colors",
-        "title": "Cat Coding"
-      },
-      {
-        "command": "calicoColors.catTest",
-        "category": "Calico Colors",
-        "title": "Cat Test"
-      },
-      {
-        "command": "calicoColors.clearColors",
-        "category": "Calico Colors",
-        "title": "Clear Colors",
-        "icon": "$(clear-all)"
-      },
-      {
-        "command": "calico.test",
-        "category": "Calico Colors",
-        "title": "Clear Test",
-        "icon": "Test"
+        "command": "emacs.findFilePanel",
+        "category": "Emacs",
+        "title": "Find File (Panel)"
       }
-    ],
-    "menus": {
-      "view/title": [
-        {
-          "command": "calicoColors.clearColors",
-          "group": "navigation",
-          "when": "view == calicoColors.colorsView"
-        }
-      ]
-    }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
@@ -97,7 +65,7 @@
   "devDependencies": {
     "@types/react": "^18.0.25",
     "@types/react-dom": "^18.0.8",
-    "@types/vscode": "^1.50.0",
+    "@types/vscode": "^1.73.0",
     "@typescript-eslint/eslint-plugin": "^5.42.0",
     "@typescript-eslint/parser": "^5.42.0",
     "@vitejs/plugin-react": "^2.2.0",

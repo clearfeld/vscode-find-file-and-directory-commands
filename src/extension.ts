@@ -2,19 +2,6 @@ import * as vscode from "vscode";
 import * as Path from "path";
 import * as cp from "child_process";
 
-async function pickWorkspace(): Promise<string> {
-  const targetWorkspaceFolder: vscode.WorkspaceFolder | undefined =
-    await vscode.window.showWorkspaceFolderPick();
-  if (targetWorkspaceFolder === undefined) {
-    throw new Error(
-      "No workspace is opened TODO have default directory opened."
-    );
-    // TODO: add default directory to search from or something
-  }
-
-  return targetWorkspaceFolder.uri.path;
-}
-
 async function pathToCurrentDirectory(): Promise<string | null> {
   const currentEditor = vscode.window.activeTextEditor;
   if (currentEditor) {
@@ -22,20 +9,6 @@ async function pathToCurrentDirectory(): Promise<string | null> {
   }
 
   return null;
-  // return Path.dirname(currentEditor.document.uri.path);
-  // return pickWorkspace();
-}
-
-async function pathToCurrentWorkspace(): Promise<string | null> {
-  const currentEditor = vscode.window.activeTextEditor;
-  if (currentEditor) {
-    return vscode.workspace.getWorkspaceFolder(currentEditor.document.uri).uri
-      .path;
-  }
-
-  return null;
-  // return Path.dirname(currentEditor.document.uri.path);
-  // return pickWorkspace();
 }
 
 export function activate(context: vscode.ExtensionContext) {
@@ -49,29 +22,17 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand("calicoColors.addColor", () => {
-      provider.addColor();
-    })
-  );
-
-  context.subscriptions.push(
-    vscode.commands.registerCommand("calicoColors.clearColors", () => {
-      provider.clearColors();
-    })
-  );
-
-  context.subscriptions.push(
-    vscode.commands.registerCommand("calicoColors.catCoding", async () => {
+    vscode.commands.registerCommand("emacs.findFileEditor", async () => {
       provider.createCatCodingView();
 
       if (!provider._panel) {
         return;
       }
-      vscode.commands.executeCommand(
-        "setContext",
-        "clearfeld-minibuffer-find-file.active",
-        true
-      );
+      // vscode.commands.executeCommand(
+      //   "setContext",
+      //   "clearfeld-minibuffer-find-file.active",
+      //   true
+      // );
 
       let defaultDir = await pathToCurrentDirectory();
       defaultDir += Path.sep;
@@ -117,15 +78,24 @@ export function activate(context: vscode.ExtensionContext) {
 
   // Our new command
   context.subscriptions.push(
-    vscode.commands.registerCommand("calico.test", async () => {
-      if (!provider._view) {
-        return;
-      }
+    vscode.commands.registerCommand("emacs.findFilePanel", async () => {
       vscode.commands.executeCommand(
         "setContext",
-        "clearfeld-minibuffer-find-file.active",
+        "emacs.findFilePanel",
         true
       );
+      // vscode.commands.executeCommand("my-fancy-view.focus")
+
+      // provider.resolveWebviewView()
+
+      // provider._view?.show(true);
+
+      // TODO: test running this command twice in a different command maybe????
+
+      if (!provider._view) {
+        console.log("rip");
+        return;
+      }
 
       provider._view.show(true);
 
@@ -163,58 +133,10 @@ export function activate(context: vscode.ExtensionContext) {
       });
     })
   );
-
-  // Our new command
-  context.subscriptions.push(
-    vscode.commands.registerCommand("calicoColors.catTest", async () => {
-      if (!provider._panel) {
-        return;
-      }
-      vscode.commands.executeCommand(
-        "setContext",
-        "clearfeld-minibuffer-find-file.active",
-        true
-      );
-
-      // provider._panel.show(true);
-
-      // let defaultDir = await pathToCurrentDirectory();
-      // defaultDir += Path.sep;
-      // let dir = vscode.Uri.file(defaultDir);
-
-      // this.rgProc = cp.spawn(rgPath, rgArgs.args, { cwd: rootFolder });
-
-      cp.exec("cd && dir /o", (err: any, stdout: any, stderr: any) => {
-        // cp.exec(`cd && ls -al --group-directories-first C:\\ | awk '{print $9 "\`" $1 "\`" $5 "\`" $6" "$7" "$8}'`, (err: any, stdout: any, stderr: any) => {
-        console.log("stdout: " + stdout);
-        console.log("stderr: " + stderr);
-        if (err) {
-          console.log("error: " + err);
-        } else {
-          // get current theme properties color
-          // respect theme color choice
-          // const color = new vscode.ThemeColor('badge.background');
-
-          const result = stdout.split(/\r?\n/);
-          provider._panel?.webview.postMessage({
-            command: "refactor",
-            data: JSON.stringify(result),
-          });
-        }
-      });
-
-      // Send a message to our webview.
-      // You can send any JSON serializable data.
-      // provider._panel.webview.postMessage({
-      //   command: "refactor",
-      //   data: dir,
-      // });
-    })
-  );
 }
 
 class ColorsViewProvider implements vscode.WebviewViewProvider {
-  public static readonly viewType = "calicoColors.colorsView";
+  public static readonly viewType = "emacs.findFileView";
 
   public _view?: vscode.WebviewView;
   public _panel?: vscode.WebviewPanel;
@@ -224,15 +146,14 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
     private readonly _myUri: vscode.Uri
   ) {}
 
-  public createCatCodingView() // _token: vscode.CancellationToken // context: vscode.WebviewViewResolveContext, // webviewView: vscode.WebviewView,
-  {
+  public createCatCodingView() { // _token: vscode.CancellationToken // context: vscode.WebviewViewResolveContext, // webviewView: vscode.WebviewView,
     // Create and show panel
     // let vuri = new vscode.Uri;
     this._panel = vscode.window.createWebviewPanel(
-      "calicoColors.colorsView",
+      "emacs.findFileView",
       // "my-fancy-view",// this.viewType, // "catCoding",
       "Minibuffer: File Open",
-      vscode.ViewColumn.One,
+      vscode.ViewColumn.Active,
       {
         // Allow scripts in the webview
         enableScripts: true,
@@ -258,6 +179,7 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
             console.log("data.value - ", data.value);
             vscode.workspace.openTextDocument(data.value).then((document) => {
               vscode.window.showTextDocument(document);
+              this._panel?.dispose();
             });
           }
           break;
@@ -265,14 +187,13 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
         case "CreateFile":
           {
             let buf = new Uint8Array();
-            let duri = vscode.Uri.file(data.directory + "\\" +  data.value);
+            let duri = vscode.Uri.file(data.directory + "\\" + data.value);
             let throw_away = await vscode.workspace.fs.writeFile(duri, buf);
             const openPath = vscode.Uri.parse(duri);
-            vscode.workspace
-              .openTextDocument(openPath)
-              .then((document) => {
-                vscode.window.showTextDocument(document);
-              });
+            vscode.workspace.openTextDocument(openPath).then((document) => {
+              vscode.window.showTextDocument(document);
+              this._panel?.dispose();
+            });
           }
           break;
 
@@ -309,6 +230,8 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
     context: vscode.WebviewViewResolveContext,
     _token: vscode.CancellationToken
   ) {
+    // return;
+
     this._view = webviewView;
 
     webviewView.webview.options = {
@@ -327,7 +250,12 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
 
     webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 
-    webviewView.webview.onDidReceiveMessage((data) => {
+    this._view?.onDidDispose((data) => {
+    // switch (data.type)
+    console.log("view panel disposed - ", data);
+    });
+
+    webviewView.webview.onDidReceiveMessage(async (data) => {
       switch (data.type) {
         case "colorSelected": {
           vscode.window.activeTextEditor?.insertSnippet(
@@ -341,18 +269,31 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
             console.log("data.value - ", data.value);
             vscode.workspace.openTextDocument(data.value).then((document) => {
               vscode.window.showTextDocument(document);
+              this._view = undefined;
+              vscode.commands.executeCommand(
+                "setContext",
+                "emacs.findFilePanel",
+                false
+              );
             });
           }
           break;
 
         case "CreateFile":
           {
-            console.log("data.value - ", data.value);
-            vscode.workspace
-              .openTextDocument("untitled:" + data.value)
-              .then((document) => {
-                vscode.window.showTextDocument(document);
-              });
+            let buf = new Uint8Array();
+            let duri = vscode.Uri.file(data.directory + "\\" + data.value);
+            let throw_away = await vscode.workspace.fs.writeFile(duri, buf);
+            const openPath = vscode.Uri.parse(duri);
+            vscode.workspace.openTextDocument(openPath).then((document) => {
+              vscode.window.showTextDocument(document);
+              this._view = undefined;
+              vscode.commands.executeCommand(
+                "setContext",
+                "emacs.findFilePanel",
+                false
+              );
+            });
           }
           break;
 
@@ -382,19 +323,6 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
         }
       }
     });
-  }
-
-  public addColor() {
-    if (this._view) {
-      this._view.show?.(true); // `show` is not implemented in 1.49 but is for 1.50 insiders
-      this._view.webview.postMessage({ type: "addColor" });
-    }
-  }
-
-  public clearColors() {
-    if (this._view) {
-      this._view.webview.postMessage({ type: "clearColors" });
-    }
   }
 
   public _getHtmlForWebview(webview: vscode.Webview) {
