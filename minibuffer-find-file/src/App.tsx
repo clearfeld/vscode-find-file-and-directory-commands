@@ -36,7 +36,7 @@ function App() {
   const currentDir = useRef(null);
 
   const [lengthLongestFileOrDirectory, setLengthLongestFileOrDirectory] =
-    useState(-1);
+    useState<number>(-1);
 
   const [indexChoice, setIndexChoice] = useState(0);
   const [iv, setIV] = useState("");
@@ -109,7 +109,7 @@ function App() {
     }
   }
 
-  function ParseDirData(dirDataRaw, offset_lines = 0) {
+  function ParseDirData(dirDataRaw, offset_lines: number = 0) {
     let x = [];
     const ddrl = dirDataRaw.length;
     for (let i = 6 - offset_lines; i < ddrl - 3; ++i) {
