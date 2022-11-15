@@ -7,8 +7,6 @@ import "./App.css";
 
 // TODO: shift enter should create file regardless of index choice
 
-// TODO: colon in input should change drive
-
 // TODO: format dates closer to emacs find-file
 const months = [
   "Jan",
@@ -171,6 +169,19 @@ function App() {
     if (e.key === "Enter") {
       e.preventDefault();
       // console.log("Enter was pressed was presses");
+
+      if (iv.includes(":")) {
+        // most likely a change directory attempt
+        vscode.postMessage({
+          type: "Enter",
+          value: iv,
+          pick_type: "directory",
+        });
+
+        currentDir.current = iv;
+        setIV("");
+        return;
+      }
 
       let dl = dirDataFiltered[indexChoice];
       // console.log(dl);
