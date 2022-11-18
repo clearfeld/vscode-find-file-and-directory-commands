@@ -79,21 +79,22 @@ export function activate(context: vscode.ExtensionContext) {
   // Our new command
   context.subscriptions.push(
     vscode.commands.registerCommand("emacs.findFilePanel", async () => {
-      vscode.commands.executeCommand(
+      /// TODO: investigate this more this seems too hackish to leave as is
+      let throw_away = null;
+      throw_away = await vscode.commands.executeCommand(
         "setContext",
         "emacs.findFilePanel",
         true
       );
-      // vscode.commands.executeCommand("my-fancy-view.focus")
-
-      // provider.resolveWebviewView()
-
-      // provider._view?.show(true);
-
-      // TODO: test running this command twice in a different command maybe????
+      throw_away = await vscode.commands.executeCommand(
+        "emacs.findFileView.focus"
+      );
+      throw_away = await vscode.commands.executeCommand(
+        "emacs.findFileView.focus"
+      );
+      ///
 
       if (!provider._view) {
-        console.log("rip");
         return;
       }
 
@@ -221,6 +222,19 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
 
           break;
         }
+
+
+        case "Quit":
+          {
+              this._view = undefined;
+              vscode.commands.executeCommand(
+                "setContext",
+                "emacs.findFilePanel",
+                false
+              );
+          }
+          break;
+
       }
     });
   }
@@ -318,9 +332,19 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
               }
             }
           );
+        } break;
 
+        case "Quit":
+          {
+              this._view = undefined;
+              vscode.commands.executeCommand(
+                "setContext",
+                "emacs.findFilePanel",
+                false
+              );
+          }
           break;
-        }
+
       }
     });
   }

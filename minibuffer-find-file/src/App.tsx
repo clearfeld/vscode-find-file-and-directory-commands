@@ -24,6 +24,7 @@ const months = [
   "Dec",
 ];
 
+// @ts-ignore
 const vscode = acquireVsCodeApi();
 
 function App() {
@@ -33,13 +34,13 @@ function App() {
   const [dirData, setDirData] = useState(null);
   const [dirDataFiltered, setDirDataFiltered] = useState(null);
 
-  const currentDir = useRef(null);
+  const currentDir = useRef<string>("");
 
   const [lengthLongestFileOrDirectory, setLengthLongestFileOrDirectory] =
     useState<number>(-1);
 
-  const [indexChoice, setIndexChoice] = useState(0);
-  const [iv, setIV] = useState("");
+  const [indexChoice, setIndexChoice] = useState<number>(0);
+  const [iv, setIV] = useState<string>("");
 
   useEffect(() => {
     window.addEventListener("message", HandleMessages);
@@ -70,7 +71,7 @@ function App() {
           let x = JSON.parse(event.data.data);
           setDirDataRaw(x);
           // console.log("Current Dir - ", currentDir);
-          if (currentDir.current === null) {
+          if (currentDir.current === "") {
             // console.log("Set working dir");
             currentDir.current = x[0];
           }
@@ -99,7 +100,7 @@ function App() {
           let x = JSON.parse(event.data.data);
           setDirDataRaw(x);
           // console.log("Current Dir - ", currentDir);
-          if (currentDir.current === null) {
+          if (currentDir.current === "") {
             // console.log("Set working dir");
             currentDir.current = x[0];
           }
@@ -183,14 +184,20 @@ function App() {
     }
   }
 
-  function InputOnBlur() {
+  function InputOnBlur(): void {
     if (inputRef !== null && inputRef.current !== null) {
       inputRef.current.focus();
     }
   }
 
-  function InputOnKeyPress(e) {
+  function InputOnKeyPress(e): void {
     // console.log("handle key press - ", e.key);
+    if (e.key === "Escape") {
+      e.preventDefault();
+      console.log("Escape was pressed");
+      return;
+    }
+
     if (e.key === "Enter") {
       e.preventDefault();
       // console.log("Enter was pressed was presses");
@@ -289,7 +296,6 @@ function App() {
   }
 
   function InputOnKeyDown(e) {
-    // console.log(e.keyCode, " ", e.key, " ", e.ctrlKey);
     if (e.keyCode === 38) {
       e.preventDefault();
       if (indexChoice !== 0) {
@@ -302,10 +308,18 @@ function App() {
         setIndexChoice(indexChoice + 1);
         window.scrollBy(0, 14);
       }
-    } else if (e.ctrlKey && e.keyCode === 71) {
-      // ctrl + g
+    } else if ((e.ctrlKey && e.keyCode === 71) || e.keyCode === 27) {
+      // ctrl + g || escape
       e.preventDefault();
+
+      vscode.postMessage({
+        type: "Quit",
+      });
+
+      return;
+
       // console.log("Ctrl + G was pressed was presses");
+      // console.log("Escape");
     } else if (e.keyCode === 8) {
       // backspace
       if (iv !== "") return;
@@ -341,7 +355,6 @@ function App() {
 
       vscode.postMessage({
         type: "Enter",
-        // value: currentDir,
         value: currentDir.current,
         pick_type: "directory",
         // directory: currentDir.current + "\\bin"
@@ -358,17 +371,19 @@ function App() {
     }
   }
 
-  function GetFileAndDirectoryCount() {
-    let count = dirDataRaw.length - 11;
-    let str = "";
-    if (count < 10) count = `${count}${str.padEnd(4)}`;
-    else if (count < 100) count = `${count}${str.padEnd(3)}`;
-    else if (count < 1000) count = `${count}${str.padEnd(2)}`;
-    else if (count < 100000) count = `${count}${str.padEnd(1)}`;
-    return count;
+  function GetFileAndDirectoryCount(): string {
+    if (dirDataRaw) {
+      let count: number = dirDataRaw.length - 11;
+      let str = "";
+      if (count < 10) return `${count}${str.padEnd(4)}`;
+      else if (count < 100) return `${count}${str.padEnd(3)}`;
+      else if (count < 1000) return `${count}${str.padEnd(2)}`;
+      else if (count < 100000) return `${count}${str.padEnd(1)}`;
+    }
+    return "";
   }
 
-  function GetCurrentDir() {
+  function GetCurrentDir(): string {
     let x = currentDir.current;
     if (x[x.length - 1] !== "\\") {
       x += "\\";
@@ -399,7 +414,7 @@ function App() {
 
           {dirDataFiltered && (
             <div className="clearfeld-minibuffer-find-file__results-wrapper">
-              {dirDataFiltered.map((line, idx) => {
+              {dirDataFiltered.map((line, idx: number) => {
                 // if (idx < 4 || idx > dirData.length) return;
                 // indexChoice
 
