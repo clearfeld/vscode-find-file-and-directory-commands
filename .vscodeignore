@@ -1,0 +1,14 @@
+**/*.ts
+**/tsconfig.json
+node_modules/
+src/
+.vscode/
+minibuffer-find-file/src/
+minibuffer-find-file/node_modules/
+minibuffer-find-file/public/
+minibuffer-find-file/.gitignore
+minibuffer-find-file/index.html
+minibuffer-find-file/package-lock.json
+minibuffer-find-file/package.json
+minibuffer-find-file/tsconfig.json
+minibuffer-find-file/vite.config.js

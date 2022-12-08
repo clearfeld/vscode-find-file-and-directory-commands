@@ -1,5 +1,5 @@
 import { useState, React, useEffect, useRef } from "react";
-import reactLogo from "./assets/react.svg";
+// import reactLogo from "./assets/react.svg";
 import "./App.css";
 
 // unix command
@@ -296,7 +296,37 @@ function App() {
   }
 
   function InputOnKeyDown(e) {
-    if (e.keyCode === 38) {
+    // console.log(e.keyCode);
+
+    // tab
+    if(e.keyCode === 9) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      let dl = dirDataFiltered[indexChoice];
+      let n = dl.name;
+
+      // TODO: handle tab completion closer to emacs
+      // auto navgate to dir on tab match
+
+      //let lidx = currentDir.current.lastIndexOf("\\");
+      //if (lidx === -1) {
+      //  currentDir.current = currentDir.current;
+      //} else {
+      //  let check = currentDir.current.substr(0, lidx);
+      //   // console.log("Check", check);
+      //   currentDir.current = currentDir.current.substr(0, lidx);
+
+      //   if (check.includes("\\")) {
+      //     currentDir.current = currentDir.current.substr(0, lidx);
+      //   } else {
+      //     currentDir.current = currentDir.current + "\\";
+      //   }
+      // }
+      setIV(dl.name);
+
+      return;
+    } else if (e.keyCode === 38) {
       e.preventDefault();
       if (indexChoice !== 0) {
         setIndexChoice(indexChoice - 1);

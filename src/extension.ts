@@ -1,5 +1,7 @@
 import * as vscode from "vscode";
+// @ts-ignore
 import * as Path from "path";
+// @ts-ignore
 import * as cp from "child_process";
 
 async function pathToCurrentDirectory(): Promise<string | null> {
@@ -12,6 +14,7 @@ async function pathToCurrentDirectory(): Promise<string | null> {
 }
 
 export function activate(context: vscode.ExtensionContext) {
+  // @ts-ignore
   const provider = new ColorsViewProvider(context.extensionUri);
 
   context.subscriptions.push(
@@ -28,11 +31,6 @@ export function activate(context: vscode.ExtensionContext) {
       if (!provider._panel) {
         return;
       }
-      // vscode.commands.executeCommand(
-      //   "setContext",
-      //   "clearfeld-minibuffer-find-file.active",
-      //   true
-      // );
 
       let defaultDir = await pathToCurrentDirectory();
       defaultDir += Path.sep;
@@ -50,7 +48,7 @@ export function activate(context: vscode.ExtensionContext) {
       }
       console.log("defaultDir - ", defaultDir);
 
-      // enable this to get dir of active editor
+      // // enable this to get dir of active editor
       // if (dir !== null) {
       //   // console.log(defaultDir);
       //   let dirx = defaultDir?.substring(1, defaultDir.length - 1);
@@ -79,6 +77,21 @@ export function activate(context: vscode.ExtensionContext) {
   // Our new command
   context.subscriptions.push(
     vscode.commands.registerCommand("emacs.findFilePanel", async () => {
+      let defaultDir = await pathToCurrentDirectory();
+      defaultDir += Path.sep;
+      console.log("defaultDir - ", defaultDir);
+      let dir = null;
+
+      let cmd = "cd && dir /o";
+
+      if (defaultDir !== null) {
+        dir = vscode.Uri.file(defaultDir);
+        defaultDir = defaultDir.substr(1, defaultDir.length - 2);
+        defaultDir = defaultDir.replaceAll("/", "\\");
+        // cmd = `cd ${defaultDir} && dir /o`;
+        cmd = `dir /o ${defaultDir}`;
+      }
+
       /// TODO: investigate this more this seems too hackish to leave as is
       let throw_away = null;
       throw_away = await vscode.commands.executeCommand(
@@ -100,13 +113,9 @@ export function activate(context: vscode.ExtensionContext) {
 
       provider._view.show(true);
 
-      let defaultDir = await pathToCurrentDirectory();
-      defaultDir += Path.sep;
-      let dir = vscode.Uri.file(defaultDir);
-
       // this.rgProc = cp.spawn(rgPath, rgArgs.args, { cwd: rootFolder });
 
-      cp.exec("cd && dir /o", (err: any, stdout: any, stderr: any) => {
+      cp.exec(cmd, (err: any, stdout: any, stderr: any) => {
         // cp.exec(`cd && ls -al --group-directories-first C:\\ | awk '{print $9 "\`" $1 "\`" $5 "\`" $6" "$7" "$8}'`, (err: any, stdout: any, stderr: any) => {
         console.log("stdout: " + stdout);
         console.log("stderr: " + stderr);
@@ -121,17 +130,18 @@ export function activate(context: vscode.ExtensionContext) {
           provider._view?.webview.postMessage({
             command: "refactor",
             data: JSON.stringify(result),
-            directory: null,
+            directory: JSON.stringify(defaultDir),
           });
         }
       });
 
-      // Send a message to our webview.
-      // You can send any JSON serializable data.
-      provider._view.webview.postMessage({
-        command: "refactor",
-        data: dir,
-      });
+      // // Send a message to our webview.
+      // // You can send any JSON serializable data.
+      // provider._view.webview.postMessage({
+      //   command: "refactor",
+      //   data: dir,
+      // });
+
     })
   );
 }
@@ -142,12 +152,26 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
   public _view?: vscode.WebviewView;
   public _panel?: vscode.WebviewPanel;
 
+  private readonly webview_options = {
+    enableScripts: true,
+
+    localResourceRoots: [
+      this._extensionUri,
+      vscode.Uri.joinPath(
+        this._extensionUri,
+        "minibuffer-find-file/dist",
+        "minibuffer-find-file/dist/assets"
+      ),
+    ],
+  };
+
   constructor(
     private readonly _extensionUri: vscode.Uri,
     private readonly _myUri: vscode.Uri
   ) {}
 
-  public createCatCodingView() { // _token: vscode.CancellationToken // context: vscode.WebviewViewResolveContext, // webviewView: vscode.WebviewView,
+  public createCatCodingView() {
+    // _token: vscode.CancellationToken // context: vscode.WebviewViewResolveContext, // webviewView: vscode.WebviewView,
     // Create and show panel
     // let vuri = new vscode.Uri;
     this._panel = vscode.window.createWebviewPanel(
@@ -155,19 +179,7 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
       // "my-fancy-view",// this.viewType, // "catCoding",
       "Minibuffer: File Open",
       vscode.ViewColumn.Active,
-      {
-        // Allow scripts in the webview
-        enableScripts: true,
-
-        localResourceRoots: [
-          this._extensionUri,
-          vscode.Uri.joinPath(
-            this._extensionUri,
-            "minibuffer-find-file/dist",
-            "minibuffer-find-file/dist/assets"
-          ),
-        ],
-      }
+      this.webview_options
     );
 
     // And set its HTML content
@@ -190,6 +202,7 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
             let buf = new Uint8Array();
             let duri = vscode.Uri.file(data.directory + "\\" + data.value);
             let throw_away = await vscode.workspace.fs.writeFile(duri, buf);
+            // @ts-ignore
             const openPath = vscode.Uri.parse(duri);
             vscode.workspace.openTextDocument(openPath).then((document) => {
               vscode.window.showTextDocument(document);
@@ -223,18 +236,11 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
           break;
         }
 
-
         case "Quit":
           {
-              this._view = undefined;
-              vscode.commands.executeCommand(
-                "setContext",
-                "emacs.findFilePanel",
-                false
-              );
+            this._panel?.dispose();
           }
           break;
-
       }
     });
   }
@@ -248,25 +254,13 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
 
     this._view = webviewView;
 
-    webviewView.webview.options = {
-      // Allow scripts in the webview
-      enableScripts: true,
-
-      localResourceRoots: [
-        this._extensionUri,
-        vscode.Uri.joinPath(
-          this._extensionUri,
-          "minibuffer-find-file/dist",
-          "minibuffer-find-file/dist/assets"
-        ),
-      ],
-    };
+    webviewView.webview.options = this.webview_options;
 
     webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 
     this._view?.onDidDispose((data) => {
-    // switch (data.type)
-    console.log("view panel disposed - ", data);
+      // switch (data.type)
+      console.log("view panel disposed - ", data);
     });
 
     webviewView.webview.onDidReceiveMessage(async (data) => {
@@ -298,6 +292,7 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
             let buf = new Uint8Array();
             let duri = vscode.Uri.file(data.directory + "\\" + data.value);
             let throw_away = await vscode.workspace.fs.writeFile(duri, buf);
+            // @ts-ignore
             const openPath = vscode.Uri.parse(duri);
             vscode.workspace.openTextDocument(openPath).then((document) => {
               vscode.window.showTextDocument(document);
@@ -311,40 +306,41 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
           }
           break;
 
-        case "Enter": {
-          cp.exec(
-            `dir /o "${data.value}"`,
-            (err: any, stdout: any, stderr: any) => {
-              // console.log("stderr: " + stderr);
-              if (err) {
-                console.log("stderr - error: " + err);
-              } else {
-                console.log("stdout - " + stdout);
-                // get current theme properties color
-                // respect theme color choice
-                // const color = new vscode.ThemeColor('badge.background');
-
-                const result = stdout.split(/\r?\n/);
-                this._view?.webview.postMessage({
-                  command: "directory_change",
-                  data: JSON.stringify(result),
-                });
-              }
-            }
-          );
-        } break;
-
-        case "Quit":
+        case "Enter":
           {
-              this._view = undefined;
-              vscode.commands.executeCommand(
-                "setContext",
-                "emacs.findFilePanel",
-                false
-              );
+            cp.exec(
+              `dir /o "${data.value}"`,
+              (err: any, stdout: any, stderr: any) => {
+                // console.log("stderr: " + stderr);
+                if (err) {
+                  console.log("stderr - error: " + err);
+                } else {
+                  console.log("stdout - " + stdout);
+                  // get current theme properties color
+                  // respect theme color choice
+                  // const color = new vscode.ThemeColor('badge.background');
+
+                  const result = stdout.split(/\r?\n/);
+                  this._view?.webview.postMessage({
+                    command: "directory_change",
+                    data: JSON.stringify(result),
+                  });
+                }
+              }
+            );
           }
           break;
 
+        case "Quit":
+          {
+            this._view = undefined;
+            vscode.commands.executeCommand(
+              "setContext",
+              "emacs.findFilePanel",
+              false
+            );
+          }
+          break;
       }
     });
   }
