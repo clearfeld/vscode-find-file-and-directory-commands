@@ -141,7 +141,6 @@ export function activate(context: vscode.ExtensionContext) {
       //   command: "refactor",
       //   data: dir,
       // });
-
     })
   );
 }
@@ -283,6 +282,8 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
                 "emacs.findFilePanel",
                 false
               );
+
+              ClosePanelOnCompletionIfNotInitiallyOpened();
             });
           }
           break;
@@ -302,6 +303,8 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
                 "emacs.findFilePanel",
                 false
               );
+
+              ClosePanelOnCompletionIfNotInitiallyOpened();
             });
           }
           break;
@@ -339,6 +342,8 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
               "emacs.findFilePanel",
               false
             );
+
+            ClosePanelOnCompletionIfNotInitiallyOpened();
           }
           break;
       }
@@ -416,4 +421,10 @@ function getNonce() {
     text += possible.charAt(Math.floor(Math.random() * possible.length));
   }
   return text;
+}
+
+function ClosePanelOnCompletionIfNotInitiallyOpened(): void {
+  // TODO: figure out how to check if panel was open prior to invoking the find file command
+  // conditionally close the panel if it wasnt open before otherwise move back to whatever view in the panel was last active
+  vscode.commands.executeCommand("workbench.action.togglePanel");
 }
