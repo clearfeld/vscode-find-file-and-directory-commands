@@ -13,7 +13,18 @@ async function pathToCurrentDirectory(): Promise<string | null> {
   return null;
 }
 
+let EXT_DefaultDirectory: string;
+
+function PullConfigurationAndSet(): void {
+  const emffc_config = vscode.workspace.getConfiguration(
+    "emacs-minibuffer-find-file-commands"
+  );
+  EXT_DefaultDirectory = (emffc_config.get("defaultDirectory") as string) ?? "";
+}
+
 export function activate(context: vscode.ExtensionContext) {
+  PullConfigurationAndSet();
+
   // @ts-ignore
   const provider = new ColorsViewProvider(context.extensionUri);
 
@@ -33,18 +44,20 @@ export function activate(context: vscode.ExtensionContext) {
       }
 
       let defaultDir = await pathToCurrentDirectory();
-      defaultDir += Path.sep;
       console.log("defaultDir - ", defaultDir);
-      let dir = null;
 
       let cmd = "cd && dir /o";
+      let dir = null;
 
       if (defaultDir !== null) {
+        defaultDir += Path.sep;
         dir = vscode.Uri.file(defaultDir);
         defaultDir = defaultDir.substr(1, defaultDir.length - 2);
         defaultDir = defaultDir.replaceAll("/", "\\");
         // cmd = `cd ${defaultDir} && dir /o`;
         cmd = `dir /o ${defaultDir}`;
+      } else {
+        defaultDir = EXT_DefaultDirectory;
       }
       console.log("defaultDir - ", defaultDir);
 
@@ -78,19 +91,23 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand("emacs.findFilePanel", async () => {
       let defaultDir = await pathToCurrentDirectory();
-      defaultDir += Path.sep;
       console.log("defaultDir - ", defaultDir);
-      let dir = null;
 
       let cmd = "cd && dir /o";
+      let dir = null;
 
       if (defaultDir !== null) {
+        defaultDir += Path.sep;
         dir = vscode.Uri.file(defaultDir);
         defaultDir = defaultDir.substr(1, defaultDir.length - 2);
         defaultDir = defaultDir.replaceAll("/", "\\");
         // cmd = `cd ${defaultDir} && dir /o`;
         cmd = `dir /o ${defaultDir}`;
+      } else {
+        defaultDir = EXT_DefaultDirectory;
       }
+
+      console.log("defaultDir - ", defaultDir);
 
       /// TODO: investigate this more this seems too hackish to leave as is
       let throw_away = null;

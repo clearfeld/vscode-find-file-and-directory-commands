@@ -54,7 +54,17 @@
         "category": "Emacs",
         "title": "Find File (Panel)"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Emacs Find File",
+      "properties": {
+        "emacs-minibuffer-find-file-commands.defaultDirectory": {
+          "type": "string",
+          "default": "",
+          "description": "Default directory to use if not able to find underlying directory of active file and or view."
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
