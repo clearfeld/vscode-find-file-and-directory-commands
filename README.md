@@ -1,24 +1,19 @@
-# Calico Colors — Webview View API Sample
+# Vscode - Emacs styled find file commands
 
-Demonstrates VS Code's proposed [webview view API](https://github.com/microsoft/vscode/issues/46585). This includes:
+| Windows | OSX | Linux |
+| - | - | - |
+| :heavy_check_mark: | :x: | :x: |
 
-- Contributing a webview based view to the explorer.
-- Posting messages from an extension to a webview view
-- Posting message from a webview to an extension  
-- Persisting state in the view.
-- Contributing commands to the view title.
+NOTE: Only windows is supported and tested at the moment.
 
-## VS Code API
+## Screens 
 
-### `vscode` module
+| Find file (panel) | Find File (editor) |
+|-|-|
+| ![VSCodium_HEBQtZuDzR](https://user-images.githubusercontent.com/49600278/210297042-f2a3ac2b-e553-4be5-961b-92776fcfae30.gif) | ![VSCodium_N4vPPO6Vyr](https://user-images.githubusercontent.com/49600278/210297043-71faa00f-1102-4d3e-a15f-c29b7de5f443.gif) |
 
-- [`window.registerWebviewViewProvider`](https://code.visualstudio.com/api/references/vscode-api#window.registerWebviewViewProvider)
+## Configuration
 
-## Running the example
-
-- Open this example in VS Code 1.49+
-- `npm install`
-- `npm run watch` or `npm run compile`
-- `F5` to start debugging
-
-In the explorer, expand the `Calico Colors` view.
+| Name | Description |
+| - | - |
+| `emacs-minibuffer-find-file-commands.defaultDirectory` | Certain views don't provide an underlying directory (ex. startup screen). So this value can be set to have a default directory to start the search from.  |
