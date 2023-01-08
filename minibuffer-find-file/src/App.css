@@ -42,3 +42,20 @@
 .clearfeld-minibuffer-find-file__result-current-selection {
   background-color: var(--vscode-editorWidget-background);
 }
+
+.clearfeld-minibuffer-find-file__result-subsegment-pre {
+  font-family: var(--vscode-editor-font-family);
+  margin: 0;
+  padding: 0;
+  display: contents;
+}
+
+.clearfeld-minibuffer-find-file__result-subsegment-pre-date {
+  color: var(--vscode-charts-blue);
+}
+.clearfeld-minibuffer-find-file__result-subsegment-pre-size {
+  color: var(--vscode-charts-yellow);
+}
+.clearfeld-minibuffer-find-file__result-subsegment-pre-permissions {
+  color: var(--vscode-charts-green);
+}

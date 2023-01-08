@@ -3,27 +3,8 @@ import { DebugConsoleMode } from "vscode";
 // import reactLogo from "./assets/react.svg";
 import "./App.css";
 
-// unix command
-// ls -al --group-directories-first | tail -n +2 | awk '{print $9 "`" $1 "`" $5 "`" $6" "$7" "$8}'
-// parse out the strings with split("`");
-
 // TODO: shift enter should create file regardless of index choice
-
-// TODO: format dates closer to emacs find-file
-const months = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sept",
-  "Oct",
-  "Nov",
-  "Dec",
-];
+// TODO: clean up code and move this to a webviews folder instead
 
 // @ts-ignore
 const vscode = acquireVsCodeApi();
@@ -117,57 +98,27 @@ function App() {
     let x = [];
     const ddrl = dirDataRaw.length;
 
-    // get the 10th space index and use this as the name split point
-
-    console.log(dirDataRaw[0].replace(/\s+/g, " ").trim());
-
-    // const name_split_idx = nthIndex(
-    //   dirDataRaw[0].replace(/\s+/g, " ").trim(),
-    //   " ",
-    //   10
-    // );
-
-    const dir_line_strt = dirDataRaw[0].replace(/\s+/g, " ").trim();
-    // console.log(
-    //   name_split_idx,
-    //   dir_line_strt.substr(0, name_split_idx).split(" ")
-    // );
-
     for (let i = 0; i < ddrl; ++i) {
       const dir_line_str = dirDataRaw[i].replace(/\s+/g, " ").trim();
-      const name_split_idx = nthIndex(dir_line_str, " ", 10);
-      console.log(dir_line_str);
-      // let idx = ;
-      // let name;
-      // if () {
-      //   // name = dirDataRaw[i].substr(idx + 5, dirDataRaw[i].length).trimStart();
-      //   // console.log("name - ", name);
-      // } else {
-      //   let t = dirDataRaw[i].substr(20).trimStart();
-      //   name = t.substr(t.indexOf(" ") + 1);
-      //   // console.log("name - ", name);
-      // }
+      const name_split_idx = nthIndex(dir_line_str, " ", 8);
 
-      // // TODO: unix
-
-      if(dirDataRaw[i][0] === "d") {
+      if (dirDataRaw[i][0] === "d") {
         x.push({
           str: dir_line_str,
           split: dir_line_str.substr(0, name_split_idx).split(" "),
-          name: dir_line_str.substr(name_split_idx, dirDataRaw[i].length),
+          name: dir_line_str.substr(name_split_idx + 1, dirDataRaw[i].length),
           type: "directory",
         });
       } else {
         x.push({
           str: dir_line_str,
           split: dir_line_str.substr(0, name_split_idx).split(" "),
-          name: dir_line_str.substr(name_split_idx, dirDataRaw[i].length),
+          name: dir_line_str.substr(name_split_idx + 1, dirDataRaw[i].length),
           type: "file",
         });
       }
     }
 
-    // console.log("X - ", x);
 
     let fdl = -1;
     // find longest file or dir name
@@ -179,7 +130,7 @@ function App() {
     setLengthLongestFileOrDirectory(fdl);
 
     x.pop();
-    console.log(x);
+    // console.log(x);
 
     setDirData(x);
     setDirDataFiltered(x);
@@ -440,13 +391,14 @@ function App() {
 
   function GetFileAndDirectoryCount(): string {
     if (dirDataRaw) {
-      let count: number = dirDataRaw.length - 11;
+      let count: number = dirDataRaw.length - 3; // 3 - current dir, parent dir, and 1 extra from the length count
       let str = "";
       if (count < 10) return `${count}${str.padEnd(4)}`;
       else if (count < 100) return `${count}${str.padEnd(3)}`;
       else if (count < 1000) return `${count}${str.padEnd(2)}`;
       else if (count < 100000) return `${count}${str.padEnd(1)}`;
     }
+
     return "";
   }
 
@@ -485,47 +437,60 @@ function App() {
                 // if (idx < 4 || idx > dirData.length) return;
                 // indexChoice
 
-                  return (
-                    <div
-                      key={idx}
-                      style={line.type === "file" ? {} : {
-                        color: "var(--vscode-symbolIcon-functionForeground)",
-                      }}
-                      className={
-                        "clearfeld-minibuffer-find-file__result-row " +
-                        (indexChoice === idx &&
-                          "clearfeld-minibuffer-find-file__result-current-selection ")
-                      }
-                    >
-                      {/* <span>{lengthLongestFileOrDirectory}</span> */}
-                      <span
-                        style={{
-                          whiteSpace: "pre",
-                        }}
-                      >
-                        {line.name.padEnd(lengthLongestFileOrDirectory + 2)}
-                      </span>
-                      {/* <span>{line.split[line.split.length - 2]}</span> */}
-
-                      {/* Permissions */}
-                      <span>{line.split[0]}</span>
-                      {/* Size */}
-                      <pre
+                return (
+                  <div
+                    key={idx}
+                    style={
+                      line.type === "file"
+                        ? {}
+                        : {
+                            color:
+                              "var(--vscode-symbolIcon-functionForeground)",
+                          }
+                    }
+                    className={
+                      "clearfeld-minibuffer-find-file__result-row " +
+                      (indexChoice === idx &&
+                        "clearfeld-minibuffer-find-file__result-current-selection ")
+                    }
+                  >
+                    {/* <span>{lengthLongestFileOrDirectory}</span> */}
+                    <span
                       style={{
-                        margin: "0",
-                        padding: "0",
-                        display: "contents",
-                        fontFamily: "var(--vscode-editor-font-family)",
+                        whiteSpace: "pre",
                       }}
-                      >
-                      {" "}{" "}{" "}{line.split[3].padStart(4, " ")}{" "}{line.split[4].padStart(2, " ")}{" "}{" "}{" "}
+                    >
+                      {line.name.padEnd(lengthLongestFileOrDirectory + 2)}
+                    </span>
+                    {/* <span>{line.split[line.split.length - 2]}</span> */}
+
+                    {/* Permissions */}
+                    <pre className="clearfeld-minibuffer-find-file__result-subsegment-pre clearfeld-minibuffer-find-file__result-subsegment-pre-permissions">
+                      {line.split[0]}
+                    </pre>
+                    {/* Size */}
+
+                    {line.type === "file" ? (
+                      <pre className="clearfeld-minibuffer-find-file__result-subsegment-pre clearfeld-minibuffer-find-file__result-subsegment-pre-size">
+                        {" "}
+                        {line.split[1].padStart(4, " ")}{" "}
+                        {line.split[2].padStart(2, " ")}{" "}
                       </pre>
-                      {/* Date */}
-                      <span>
-                        {line.split[5]}{" "}{line.split[6]}{" "}{line.split[7]}{" "}{line.split[8]}{" "}{line.split[9]}
-                      </span>
-                    </div>
-                  );
+                    ) : (
+                      <pre className="clearfeld-minibuffer-find-file__result-subsegment-pre clearfeld-minibuffer-find-file__result-subsegment-pre-size">
+                        {" "}
+                        {"-".padStart(7, "-")}{" "}
+                      </pre>
+                    )}
+
+                    {/* Date */}
+                    <pre className="clearfeld-minibuffer-find-file__result-subsegment-pre clearfeld-minibuffer-find-file__result-subsegment-pre-date">
+                      {line.split[3]} {line.split[4]}{" "}
+                      {line.split[5].padStart(2, " ")} {line.split[6]}{" "}
+                      {line.split[7]}
+                    </pre>
+                  </div>
+                );
               })}
             </div>
           )}

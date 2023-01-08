@@ -4,7 +4,7 @@ import * as Path from "path";
 // @ts-ignore
 import * as cp from "child_process";
 
-const lsd_command = "lsd --icon=never -al --group-directories-first --color=never --blocks=permission,user,group,size,date,name";
+const lsd_command = "lsd --icon=never -al --group-directories-first --color=never --blocks=permission,size,date,name";
 
 async function pathToCurrentDirectory(): Promise<string | null> {
   const currentEditor = vscode.window.activeTextEditor;
@@ -194,7 +194,7 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
     // let vuri = new vscode.Uri;
     this._panel = vscode.window.createWebviewPanel(
       "emacs.findFileView",
-      // "my-fancy-view",// this.viewType, // "catCoding",
+      // "my-fancy-view",// this.viewType,
       "Minibuffer: File Open",
       vscode.ViewColumn.Active,
       this.webview_options
@@ -231,13 +231,13 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
 
         case "Enter": {
           cp.exec(
-            `${lsd_command} "${data.value}"`,
+            `${lsd_command} ${data.value}`,
             (err: any, stdout: any, stderr: any) => {
               // console.log("stderr: " + stderr);
               if (err) {
                 console.log("stderr - error: " + err);
               } else {
-                console.log("stdout - " + stdout);
+                // console.log("stdout - " + stdout);
                 // get current theme properties color
                 // respect theme color choice
                 // const color = new vscode.ThemeColor('badge.background');
@@ -283,12 +283,12 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
 
     webviewView.webview.onDidReceiveMessage(async (data) => {
       switch (data.type) {
-        case "colorSelected": {
-          vscode.window.activeTextEditor?.insertSnippet(
-            new vscode.SnippetString(`#${data.value}`)
-          );
-          break;
-        }
+        // case "colorSelected": {
+        //   vscode.window.activeTextEditor?.insertSnippet(
+        //     new vscode.SnippetString(`#${data.value}`)
+        //   );
+        //   break;
+        // }
 
         case "OpenFile":
           {
@@ -331,13 +331,13 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
         case "Enter":
           {
             cp.exec(
-              `${lsd_command} "${data.value}"`,
+              `${lsd_command} ${data.value}`,
               (err: any, stdout: any, stderr: any) => {
                 // console.log("stderr: " + stderr);
                 if (err) {
                   console.log("stderr - error: " + err);
                 } else {
-                  console.log("stdout - " + stdout);
+                  // console.log("stdout - " + stdout);
                   // get current theme properties color
                   // respect theme color choice
                   // const color = new vscode.ThemeColor('badge.background');
@@ -420,7 +420,7 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
 				<link href="${styleMainUri}" rel="stylesheet">
         <link href="${styleUri}" rel="stylesheet">
 
-				<title>Cat Colors</title>
+				<title>Clearfeld - find file commands</title>
 			</head>
 			<body>
 				<div id="root"><div/>

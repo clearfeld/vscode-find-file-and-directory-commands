@@ -1,12 +1,11 @@
 # Vscode - Emacs styled find file commands
 
-| Windows | OSX | Linux |
-| - | - | - |
-| :heavy_check_mark: | :x: | :x: |
+## Dependencies
+* [lsd](https://github.com/Peltoche/lsd)
 
-NOTE: Only windows is supported and tested at the moment.
+NOTE: the lsd command must be in your `path`.
 
-## Screens 
+## Screens
 
 | Find file (panel) | Find File (editor) |
 |-|-|
