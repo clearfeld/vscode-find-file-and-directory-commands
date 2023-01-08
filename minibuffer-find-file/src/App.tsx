@@ -5,6 +5,7 @@ import "./App.css";
 
 // TODO: shift enter should create file regardless of index choice
 // TODO: clean up code and move this to a webviews folder instead
+// TODO: highlight search match range in name portion similar to emacs
 
 // @ts-ignore
 const vscode = acquireVsCodeApi();

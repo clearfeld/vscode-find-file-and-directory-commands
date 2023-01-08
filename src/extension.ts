@@ -4,7 +4,18 @@ import * as Path from "path";
 // @ts-ignore
 import * as cp from "child_process";
 
-const lsd_command = "lsd --icon=never -al --group-directories-first --color=never --blocks=permission,size,date,name";
+const lsd_command =
+  "lsd --icon=never -al --group-directories-first --color=never --blocks=permission,size,date,name";
+
+// TODO: should make a pick workspace directory version of the find file command
+
+// TODO: add FZF find file
+// should have one from project root (git root)
+// workspaces roots
+// current directory
+// fd --type file --hidden --no-ignore --exclude=".git" | fzf --no-sort --filter="{search strings}"
+// fd --type file --hidden --no-ignore | fzf --no-sort --filter="{search strings}"
+// fd --type file --hidden | fzf --no-sort --filter="{search strings}"
 
 async function pathToCurrentDirectory(): Promise<string | null> {
   const currentEditor = vscode.window.activeTextEditor;
@@ -45,73 +56,16 @@ export function activate(context: vscode.ExtensionContext) {
         return;
       }
 
-      let defaultDir = await pathToCurrentDirectory();
-      console.log("defaultDir - ", defaultDir);
+      let [cmd, defaultDir] = await DetermineCMDAndDefaultDir();
 
-      let cmd = `cd && ${lsd_command}`;
-      let dir = null;
-
-      if (defaultDir !== null) {
-        defaultDir += Path.sep;
-        dir = vscode.Uri.file(defaultDir);
-        defaultDir = defaultDir.substr(1, defaultDir.length - 2);
-        defaultDir = defaultDir.replaceAll("/", "\\");
-        // cmd = `cd ${defaultDir} && dir /o`;
-        cmd = `${lsd_command} ${defaultDir}`;
-      } else {
-        defaultDir = EXT_DefaultDirectory;
-      }
-      console.log("defaultDir - ", defaultDir);
-
-      // // enable this to get dir of active editor
-      // if (dir !== null) {
-      //   // console.log(defaultDir);
-      //   let dirx = defaultDir?.substring(1, defaultDir.length - 1);
-      //   cmd = `cd ${dirx} && dir /o ${dirx}`;
-      //   console.log(cmd);
-      //   //cmd = cmd + " " + defaultDir?.substring(1, defaultDir.length - 1);
-      // }
-
-      cp.exec(cmd, (err: any, stdout: any, stderr: any) => {
-        console.log("stdout: " + stdout);
-        console.log("stderr: " + stderr);
-        if (err) {
-          console.log("error: " + err);
-        } else {
-          const result = stdout.split(/\r?\n/);
-          provider._panel?.webview.postMessage({
-            command: "refactor",
-            data: JSON.stringify(result),
-            directory: JSON.stringify(defaultDir),
-          });
-        }
-      });
+      PostCPResultsToView(provider._panel?.webview, cmd, defaultDir);
     })
   );
 
   // Our new command
   context.subscriptions.push(
     vscode.commands.registerCommand("emacs.findFilePanel", async () => {
-      let defaultDir = await pathToCurrentDirectory();
-      console.log("defaultDir - ", defaultDir);
-
-      let cmd = `cd && ${lsd_command}`;
-      let dir = null;
-
-      if (defaultDir !== null) {
-        defaultDir += Path.sep;
-        dir = vscode.Uri.file(defaultDir);
-        defaultDir = defaultDir.substr(1, defaultDir.length - 2);
-        defaultDir = defaultDir.replaceAll("/", "\\");
-        // cmd = `cd ${defaultDir} && dir /o`;
-        cmd = `${lsd_command} ${defaultDir}`;
-      } else {
-        defaultDir = EXT_DefaultDirectory;
-      }
-
-      console.log("defaultDir - ", defaultDir);
-
-      /// TODO: investigate this more this seems too hackish to leave as is
+      /// TODO: FIXME: HACK: investigate this more this seems too hackish to leave as is
       let throw_away = null;
       throw_away = await vscode.commands.executeCommand(
         "setContext",
@@ -130,38 +84,67 @@ export function activate(context: vscode.ExtensionContext) {
         return;
       }
 
+      let [cmd, defaultDir] = await DetermineCMDAndDefaultDir();
+
       provider._view.show(true);
 
-      // this.rgProc = cp.spawn(rgPath, rgArgs.args, { cwd: rootFolder });
-
-      cp.exec(cmd, (err: any, stdout: any, stderr: any) => {
-        // cp.exec(`cd && ls -al --group-directories-first C:\\ | awk '{print $9 "\`" $1 "\`" $5 "\`" $6" "$7" "$8}'`, (err: any, stdout: any, stderr: any) => {
-        console.log("stdout: " + stdout);
-        console.log("stderr: " + stderr);
-        if (err) {
-          console.log("error: " + err);
-        } else {
-          // get current theme properties color
-          // respect theme color choice
-          // const color = new vscode.ThemeColor('badge.background');
-
-          const result = stdout.split(/\r?\n/);
-          provider._view?.webview.postMessage({
-            command: "refactor",
-            data: JSON.stringify(result),
-            directory: JSON.stringify(defaultDir),
-          });
-        }
-      });
-
-      // // Send a message to our webview.
-      // // You can send any JSON serializable data.
-      // provider._view.webview.postMessage({
-      //   command: "refactor",
-      //   data: dir,
-      // });
+      PostCPResultsToView(provider._view?.webview, cmd, defaultDir);
     })
   );
+}
+
+async function DetermineCMDAndDefaultDir(): Promise<[string, string]> {
+  let defaultDir = await pathToCurrentDirectory();
+  // console.log("defaultDir - ", defaultDir);
+
+  let cmd = `cd && ${lsd_command}`;
+  let dir = null;
+
+  if (defaultDir !== null) {
+    defaultDir += Path.sep;
+    dir = vscode.Uri.file(defaultDir);
+    defaultDir = defaultDir.substr(1, defaultDir.length - 2);
+    defaultDir = defaultDir.replaceAll("/", "\\");
+    cmd = `${lsd_command} ${defaultDir}`;
+  } else {
+    defaultDir = EXT_DefaultDirectory;
+  }
+
+  // console.log("defaultDir - ", defaultDir);
+
+  return [cmd, defaultDir];
+}
+
+function PostCPResultsToView(
+  view: vscode.Webview,
+  cmd: string,
+  dir: string
+): void {
+  cp.exec(cmd, (err: any, stdout: any, stderr: any) => {
+    // console.log("stdout: " + stdout);
+    // console.log("stderr: " + stderr);
+    if (err) {
+      // console.log("error: " + err, stdout);
+
+      // TODO: for win32 if error 5 appears should a modal message be shown to let the user know
+      // certain files couldn't be accessed and displayed?
+
+      const result = stdout.split(/\r?\n/);
+      view.postMessage({
+        command: "refactor",
+        data: JSON.stringify(result),
+        directory: JSON.stringify(dir),
+      });
+      // }
+    } else {
+      const result = stdout.split(/\r?\n/);
+      view.postMessage({
+        command: "refactor",
+        data: JSON.stringify(result),
+        directory: JSON.stringify(dir),
+      });
+    }
+  });
 }
 
 class ColorsViewProvider implements vscode.WebviewViewProvider {
@@ -191,7 +174,6 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
   public createCatCodingView() {
     // _token: vscode.CancellationToken // context: vscode.WebviewViewResolveContext, // webviewView: vscode.WebviewView,
     // Create and show panel
-    // let vuri = new vscode.Uri;
     this._panel = vscode.window.createWebviewPanel(
       "emacs.findFileView",
       // "my-fancy-view",// this.viewType,
@@ -236,6 +218,12 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
               // console.log("stderr: " + stderr);
               if (err) {
                 console.log("stderr - error: " + err);
+
+                const result = stdout.split(/\r?\n/);
+                this._panel?.webview.postMessage({
+                  command: "directory_change",
+                  data: JSON.stringify(result),
+                });
               } else {
                 // console.log("stdout - " + stdout);
                 // get current theme properties color
@@ -268,8 +256,6 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
     context: vscode.WebviewViewResolveContext,
     _token: vscode.CancellationToken
   ) {
-    // return;
-
     this._view = webviewView;
 
     webviewView.webview.options = this.webview_options;
@@ -283,13 +269,6 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
 
     webviewView.webview.onDidReceiveMessage(async (data) => {
       switch (data.type) {
-        // case "colorSelected": {
-        //   vscode.window.activeTextEditor?.insertSnippet(
-        //     new vscode.SnippetString(`#${data.value}`)
-        //   );
-        //   break;
-        // }
-
         case "OpenFile":
           {
             console.log("data.value - ", data.value);
@@ -335,7 +314,12 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
               (err: any, stdout: any, stderr: any) => {
                 // console.log("stderr: " + stderr);
                 if (err) {
-                  console.log("stderr - error: " + err);
+                  // console.log("stderr - error: " + err, stdout);
+                  const result = stdout.split(/\r?\n/);
+                  this._view?.webview.postMessage({
+                    command: "directory_change",
+                    data: JSON.stringify(result),
+                  });
                 } else {
                   // console.log("stdout - " + stdout);
                   // get current theme properties color
