@@ -4,6 +4,8 @@ import * as Path from "path";
 // @ts-ignore
 import * as cp from "child_process";
 
+const lsd_command = "lsd --icon=never -al --group-directories-first --color=never --blocks=permission,user,group,size,date,name";
+
 async function pathToCurrentDirectory(): Promise<string | null> {
   const currentEditor = vscode.window.activeTextEditor;
   if (currentEditor) {
@@ -46,7 +48,7 @@ export function activate(context: vscode.ExtensionContext) {
       let defaultDir = await pathToCurrentDirectory();
       console.log("defaultDir - ", defaultDir);
 
-      let cmd = "cd && dir /o";
+      let cmd = `cd && ${lsd_command}`;
       let dir = null;
 
       if (defaultDir !== null) {
@@ -55,7 +57,7 @@ export function activate(context: vscode.ExtensionContext) {
         defaultDir = defaultDir.substr(1, defaultDir.length - 2);
         defaultDir = defaultDir.replaceAll("/", "\\");
         // cmd = `cd ${defaultDir} && dir /o`;
-        cmd = `dir /o ${defaultDir}`;
+        cmd = `${lsd_command} ${defaultDir}`;
       } else {
         defaultDir = EXT_DefaultDirectory;
       }
@@ -93,7 +95,7 @@ export function activate(context: vscode.ExtensionContext) {
       let defaultDir = await pathToCurrentDirectory();
       console.log("defaultDir - ", defaultDir);
 
-      let cmd = "cd && dir /o";
+      let cmd = `cd && ${lsd_command}`;
       let dir = null;
 
       if (defaultDir !== null) {
@@ -102,7 +104,7 @@ export function activate(context: vscode.ExtensionContext) {
         defaultDir = defaultDir.substr(1, defaultDir.length - 2);
         defaultDir = defaultDir.replaceAll("/", "\\");
         // cmd = `cd ${defaultDir} && dir /o`;
-        cmd = `dir /o ${defaultDir}`;
+        cmd = `${lsd_command} ${defaultDir}`;
       } else {
         defaultDir = EXT_DefaultDirectory;
       }
@@ -229,7 +231,7 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
 
         case "Enter": {
           cp.exec(
-            `dir /o "${data.value}"`,
+            `${lsd_command} "${data.value}"`,
             (err: any, stdout: any, stderr: any) => {
               // console.log("stderr: " + stderr);
               if (err) {
@@ -329,7 +331,7 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
         case "Enter":
           {
             cp.exec(
-              `dir /o "${data.value}"`,
+              `${lsd_command} "${data.value}"`,
               (err: any, stdout: any, stderr: any) => {
                 // console.log("stderr: " + stderr);
                 if (err) {

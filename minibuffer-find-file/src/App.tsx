@@ -1,4 +1,5 @@
 import { useState, React, useEffect, useRef } from "react";
+import { DebugConsoleMode } from "vscode";
 // import reactLogo from "./assets/react.svg";
 import "./App.css";
 
@@ -58,13 +59,15 @@ function App() {
 
           setIndexChoice(0);
 
+          console.log("REFACTOR", event.data);
+
           console.log("Refactor event.data.directory - ", event.data.directory);
           if (
             event.data.directory !== null &&
             event.data.directory !== undefined
           ) {
             let p = JSON.parse(event.data.directory);
-            console.log(p);
+            console.log("RES Data Directory - ", p);
             currentDir.current = JSON.parse(event.data.directory);
           }
 
@@ -113,33 +116,52 @@ function App() {
   function ParseDirData(dirDataRaw, offset_lines: number = 0) {
     let x = [];
     const ddrl = dirDataRaw.length;
-    for (let i = 6 - offset_lines; i < ddrl - 3; ++i) {
-      // if win32
-      let idx = dirDataRaw[i].lastIndexOf("<DIR>");
-      let name;
-      if (idx !== -1) {
-        name = dirDataRaw[i].substr(idx + 5, dirDataRaw[i].length).trimStart();
-        // console.log("name - ", name);
-      } else {
-        let t = dirDataRaw[i].substr(20).trimStart();
-        name = t.substr(t.indexOf(" ") + 1);
-        // console.log("name - ", name);
-      }
 
-      // TODO: unix
+    // get the 10th space index and use this as the name split point
 
-      if (dirDataRaw[i].includes("<DIR>")) {
+    console.log(dirDataRaw[0].replace(/\s+/g, " ").trim());
+
+    // const name_split_idx = nthIndex(
+    //   dirDataRaw[0].replace(/\s+/g, " ").trim(),
+    //   " ",
+    //   10
+    // );
+
+    const dir_line_strt = dirDataRaw[0].replace(/\s+/g, " ").trim();
+    // console.log(
+    //   name_split_idx,
+    //   dir_line_strt.substr(0, name_split_idx).split(" ")
+    // );
+
+    for (let i = 0; i < ddrl; ++i) {
+      const dir_line_str = dirDataRaw[i].replace(/\s+/g, " ").trim();
+      const name_split_idx = nthIndex(dir_line_str, " ", 10);
+      console.log(dir_line_str);
+      // let idx = ;
+      // let name;
+      // if () {
+      //   // name = dirDataRaw[i].substr(idx + 5, dirDataRaw[i].length).trimStart();
+      //   // console.log("name - ", name);
+      // } else {
+      //   let t = dirDataRaw[i].substr(20).trimStart();
+      //   name = t.substr(t.indexOf(" ") + 1);
+      //   // console.log("name - ", name);
+      // }
+
+      // // TODO: unix
+
+      if(dirDataRaw[i][0] === "d") {
         x.push({
-          str: dirDataRaw[i],
-          split: dirDataRaw[i].replace(/\s+/g, " ").trim().split(" "),
-          name: name,
+          str: dir_line_str,
+          split: dir_line_str.substr(0, name_split_idx).split(" "),
+          name: dir_line_str.substr(name_split_idx, dirDataRaw[i].length),
           type: "directory",
         });
       } else {
         x.push({
-          str: dirDataRaw[i],
-          split: dirDataRaw[i].replace(/\s+/g, " ").trim().split(" "),
-          name: name,
+          str: dir_line_str,
+          split: dir_line_str.substr(0, name_split_idx).split(" "),
+          name: dir_line_str.substr(name_split_idx, dirDataRaw[i].length),
           type: "file",
         });
       }
@@ -156,8 +178,23 @@ function App() {
     }
     setLengthLongestFileOrDirectory(fdl);
 
+    x.pop();
+    console.log(x);
+
     setDirData(x);
     setDirDataFiltered(x);
+  }
+
+  function nthIndex(str: string, pat: string, n: number) {
+    let L = str.length;
+    let i = -1;
+    while (n-- && i++ < L) {
+      i = str.indexOf(pat, i);
+      if (i < 0) {
+        break;
+      }
+    }
+    return i;
   }
 
   function InputOnChange(e) {
@@ -299,7 +336,7 @@ function App() {
     // console.log(e.keyCode);
 
     // tab
-    if(e.keyCode === 9) {
+    if (e.keyCode === 9) {
       e.preventDefault();
       e.stopPropagation();
 
@@ -448,10 +485,12 @@ function App() {
                 // if (idx < 4 || idx > dirData.length) return;
                 // indexChoice
 
-                if (line.type === "file") {
                   return (
                     <div
                       key={idx}
+                      style={line.type === "file" ? {} : {
+                        color: "var(--vscode-symbolIcon-functionForeground)",
+                      }}
                       className={
                         "clearfeld-minibuffer-find-file__result-row " +
                         (indexChoice === idx &&
@@ -467,38 +506,26 @@ function App() {
                         {line.name.padEnd(lengthLongestFileOrDirectory + 2)}
                       </span>
                       {/* <span>{line.split[line.split.length - 2]}</span> */}
-                      <span>
-                        {line.split[0]} {line.split[1]} {line.split[2]}
-                      </span>
-                    </div>
-                  );
-                } else {
-                  return (
-                    <div
-                      key={idx}
+
+                      {/* Permissions */}
+                      <span>{line.split[0]}</span>
+                      {/* Size */}
+                      <pre
                       style={{
-                        color: "var(--vscode-symbolIcon-functionForeground)",
+                        margin: "0",
+                        padding: "0",
+                        display: "contents",
+                        fontFamily: "var(--vscode-editor-font-family)",
                       }}
-                      className={
-                        "clearfeld-minibuffer-find-file__result-row " +
-                        (indexChoice === idx &&
-                          "clearfeld-minibuffer-find-file__result-current-selection ")
-                      }
-                    >
-                      <span
-                        style={{
-                          whiteSpace: "pre",
-                        }}
                       >
-                        {line.name.padEnd(lengthLongestFileOrDirectory + 2)}
-                      </span>
-                      {/* <span>{line.split[line.split.length - 2]}</span> */}
+                      {" "}{" "}{" "}{line.split[3].padStart(4, " ")}{" "}{line.split[4].padStart(2, " ")}{" "}{" "}{" "}
+                      </pre>
+                      {/* Date */}
                       <span>
-                        {line.split[0]} {line.split[1]} {line.split[2]}
+                        {line.split[5]}{" "}{line.split[6]}{" "}{line.split[7]}{" "}{line.split[8]}{" "}{line.split[9]}
                       </span>
                     </div>
                   );
-                }
               })}
             </div>
           )}
