@@ -20,7 +20,7 @@ const lsd_command =
 async function pathToCurrentDirectory(): Promise<string | null> {
   const currentEditor = vscode.window.activeTextEditor;
   if (currentEditor) {
-    return Path.dirname(currentEditor.document.uri.path);
+    return Path.dirname(currentEditor.document.uri.fsPath);
   }
 
   return null;
@@ -95,22 +95,13 @@ export function activate(context: vscode.ExtensionContext) {
 
 async function DetermineCMDAndDefaultDir(): Promise<[string, string]> {
   let defaultDir = await pathToCurrentDirectory();
-  // console.log("defaultDir - ", defaultDir);
-
   let cmd = `cd && ${lsd_command}`;
-  let dir = null;
 
-  if (defaultDir !== null) {
-    defaultDir += Path.sep;
-    dir = vscode.Uri.file(defaultDir);
-    defaultDir = defaultDir.substr(1, defaultDir.length - 2);
-    defaultDir = defaultDir.replaceAll("/", "\\");
+  if(defaultDir !== null) {
     cmd = `${lsd_command} ${defaultDir}`;
   } else {
     defaultDir = EXT_DefaultDirectory;
   }
-
-  // console.log("defaultDir - ", defaultDir);
 
   return [cmd, defaultDir];
 }

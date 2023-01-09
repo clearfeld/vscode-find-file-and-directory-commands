@@ -1,4 +1,4 @@
-# Vscode - Emacs styled find file commands
+# Vscode - More find file and directory commands
 
 ## Dependencies
 * [lsd](https://github.com/Peltoche/lsd)

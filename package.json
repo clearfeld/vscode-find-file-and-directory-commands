@@ -1,13 +1,14 @@
 {
-  "name": "emacs-minibuffer-find-file-commands",
-  "description": "A port of the emacs minibuffer find file commands",
-  "version": "0.0.1",
+  "name": "find-file-and-directory-commands",
+  "description": "Additional find file and directory commands.",
+  "version": "0.0.2",
   "publisher": "clearfeld",
+  "icon": "assets/icon.png",
   "private": true,
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/clearfeld/vscode-emacs-style-find-file-commands"
+    "url": "https://github.com/clearfeld/vscode-find-file-and-directory-commands"
   },
   "engines": {
     "vscode": "^1.73.0"
@@ -46,12 +47,12 @@
     "commands": [
       {
         "command": "emacs.findFileEditor",
-        "category": "Emacs",
+        "category": "clearfeld",
         "title": "Find File (Editor)"
       },
       {
         "command": "emacs.findFilePanel",
-        "category": "Emacs",
+        "category": "clearfeld",
         "title": "Find File (Panel)"
       }
     ],
