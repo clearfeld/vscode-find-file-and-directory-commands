@@ -27,9 +27,9 @@
   /* // padding: 2px 0px 4px 4px !important; */
 }
 
-.clearfeld-minibuffer-find-file__results-wrapper {
+/* .clearfeld-minibuffer-find-file__results-wrapper {
   padding-top: 1.25rem;
-}
+} */
 
 .clearfeld-minibuffer-find-file__result-row {
   cursor: pointer;

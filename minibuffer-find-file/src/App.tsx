@@ -2,7 +2,10 @@ import { useState, React, useEffect, useRef } from "react";
 import { DebugConsoleMode } from "vscode";
 // import reactLogo from "./assets/react.svg";
 import "./App.css";
-import Fuse from "fuse.js";
+// import Fuse from "fuse.js";
+
+import { FixedSizeList as List } from "react-window";
+import { CSSProperties } from "react";
 
 // TODO: shift enter should create file regardless of index choice
 // TODO: clean up code and move this to a webviews folder instead
@@ -33,6 +36,18 @@ const vscode = acquireVsCodeApi();
 
 function App() {
   const inputRef = useRef(null);
+  const listRef = useRef(null);
+
+  const [windowDimensions, setWindowDimensions] = useState(
+    getWindowDimensions()
+  );
+
+  // @ts-ignore
+  const css_root = getComputedStyle(window.document.body);
+  const line_height =
+    parseInt(
+      css_root.getPropertyValue("--vscode-editor-font-size").slice(0, -2)
+    ) + 2;
 
   const [dirDataRaw, setDirDataRaw] = useState(null);
   const [dirData, setDirData] = useState(null);
@@ -50,11 +65,25 @@ function App() {
 
   useEffect(() => {
     window.addEventListener("message", HandleMessages);
+    window.addEventListener("resize", handleResize);
 
     return () => {
       window.addEventListener("message", HandleMessages);
+      window.removeEventListener("resize", handleResize);
     };
   }, []);
+
+  function handleResize() {
+    setWindowDimensions(getWindowDimensions());
+  }
+
+  function getWindowDimensions() {
+    const { innerWidth: width, innerHeight: height } = window;
+    return {
+      width,
+      height,
+    };
+  }
 
   function HandleMessages(event) {
     switch (event.data.command) {
@@ -183,7 +212,8 @@ function App() {
     if (e.target.value === "") {
       setDirDataFiltered(dirData);
       setIndexChoice(0);
-      window.scrollBy(0, 0);
+      // window.scrollBy(0, 0);
+      listRef.current!.scrollToItem(0);
     } else {
       let x = [];
       for (let i = 0; i < dirData.length; ++i) {
@@ -196,7 +226,8 @@ function App() {
       }
       setDirDataFiltered(x);
       setIndexChoice(0);
-      window.scrollBy(0, 0);
+      // window.scrollBy(0, 0);
+      listRef.current!.scrollToItem(0);
     }
   }
 
@@ -346,13 +377,15 @@ function App() {
       e.preventDefault();
       if (indexChoice !== 0) {
         setIndexChoice(indexChoice - 1);
-        window.scrollBy(0, -14);
+        // window.scrollBy(0, -14);
+        listRef.current!.scrollToItem(indexChoice - 1);
       }
     } else if (e.keyCode === 40) {
       e.preventDefault();
       if (indexChoice !== dirDataFiltered.length - 1) {
         setIndexChoice(indexChoice + 1);
-        window.scrollBy(0, 14);
+        // window.scrollBy(0, 14);
+        listRef.current!.scrollToItem(indexChoice + 1);
       }
     } else if ((e.ctrlKey && e.keyCode === 71) || e.keyCode === 27) {
       // ctrl + g || escape
@@ -460,67 +493,80 @@ function App() {
           </div>
 
           {dirDataFiltered && (
-            <div className="clearfeld-minibuffer-find-file__results-wrapper">
-              {dirDataFiltered.map((line, idx: number) => {
-                // if (idx < 4 || idx > dirData.length) return;
-                // indexChoice
+            <List
+              style={{
+                marginTop: `${line_height + 2}px`,
+              }}
+              height={windowDimensions.height - (line_height + 6)}
+              itemCount={dirDataFiltered.length}
+              itemSize={line_height}
+              width={"100%"}
+              itemData={dirDataFiltered}
+              ref={listRef}
+            >
+              {({ index, style, data }) => {
+                const line = data[index];
 
                 return (
                   <div
-                    key={idx}
-                    style={
-                      line.type === "file"
-                        ? {}
-                        : {
-                            color:
-                              "var(--vscode-symbolIcon-functionForeground)",
-                          }
-                    }
-                    className={
-                      "clearfeld-minibuffer-find-file__result-row " +
-                      (indexChoice === idx &&
-                        "clearfeld-minibuffer-find-file__result-current-selection ")
-                    }
+                    style={style}
+                    className="clearfeld-minibuffer-find-file__results-wrapper"
                   >
-                    {/* <span>{lengthLongestFileOrDirectory}</span> */}
-                    <span
-                      style={{
-                        whiteSpace: "pre",
-                      }}
+                    <div
+                      style={
+                        line.type === "file"
+                          ? {}
+                          : {
+                              color:
+                                "var(--vscode-symbolIcon-functionForeground)",
+                            }
+                      }
+                      className={
+                        "clearfeld-minibuffer-find-file__result-row " +
+                        (indexChoice === index &&
+                          "clearfeld-minibuffer-find-file__result-current-selection ")
+                      }
                     >
-                      {line.name.padEnd(lengthLongestFileOrDirectory + 2)}
-                    </span>
-                    {/* <span>{line.split[line.split.length - 2]}</span> */}
+                      {/* <span>{lengthLongestFileOrDirectory}</span> */}
+                      <span
+                        style={{
+                          whiteSpace: "pre",
+                        }}
+                      >
+                        {line.name.padEnd(lengthLongestFileOrDirectory + 2)}
+                      </span>
+                      {/* <span>{line.split[line.split.length - 2]}</span> */}
 
-                    {/* Permissions */}
-                    <pre className="clearfeld-minibuffer-find-file__result-subsegment-pre clearfeld-minibuffer-find-file__result-subsegment-pre-permissions">
-                      {line.split[0]}
-                    </pre>
-                    {/* Size */}
-
-                    {line.type === "file" ? (
-                      <pre className="clearfeld-minibuffer-find-file__result-subsegment-pre clearfeld-minibuffer-find-file__result-subsegment-pre-size">
-                        {" "}
-                        {line.split[1].padStart(4, " ")}{" "}
-                        {line.split[2].padStart(2, " ")}{" "}
+                      {/* Permissions */}
+                      <pre className="clearfeld-minibuffer-find-file__result-subsegment-pre clearfeld-minibuffer-find-file__result-subsegment-pre-permissions">
+                        {line.split[0]}
                       </pre>
-                    ) : (
-                      <pre className="clearfeld-minibuffer-find-file__result-subsegment-pre clearfeld-minibuffer-find-file__result-subsegment-pre-size">
-                        {" "}
-                        {"-".padStart(7, "-")}{" "}
-                      </pre>
-                    )}
+                      {/* Size */}
 
-                    {/* Date */}
-                    <pre className="clearfeld-minibuffer-find-file__result-subsegment-pre clearfeld-minibuffer-find-file__result-subsegment-pre-date">
-                      {line.split[3]} {line.split[4]}{" "}
-                      {line.split[5].padStart(2, " ")} {line.split[6]}{" "}
-                      {line.split[7]}
-                    </pre>
+                      {line.type === "file" ? (
+                        <pre className="clearfeld-minibuffer-find-file__result-subsegment-pre clearfeld-minibuffer-find-file__result-subsegment-pre-size">
+                          {" "}
+                          {line.split[1].padStart(4, " ")}{" "}
+                          {line.split[2].padStart(2, " ")}{" "}
+                        </pre>
+                      ) : (
+                        <pre className="clearfeld-minibuffer-find-file__result-subsegment-pre clearfeld-minibuffer-find-file__result-subsegment-pre-size">
+                          {" "}
+                          {"-".padStart(7, "-")}{" "}
+                        </pre>
+                      )}
+
+                      {/* Date */}
+                      <pre className="clearfeld-minibuffer-find-file__result-subsegment-pre clearfeld-minibuffer-find-file__result-subsegment-pre-date">
+                        {line.split[3]} {line.split[4]}{" "}
+                        {line.split[5].padStart(2, " ")} {line.split[6]}{" "}
+                        {line.split[7]}
+                      </pre>
+                    </div>
                   </div>
                 );
-              })}
-            </div>
+              }}
+            </List>
           )}
         </div>
       )}
