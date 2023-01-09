@@ -1,7 +1,7 @@
 {
   "name": "find-file-and-directory-commands",
   "description": "Additional find file and directory commands.",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "publisher": "clearfeld",
   "icon": "assets/icon.png",
   "private": true,

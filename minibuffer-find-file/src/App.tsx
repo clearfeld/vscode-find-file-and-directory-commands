@@ -2,10 +2,31 @@ import { useState, React, useEffect, useRef } from "react";
 import { DebugConsoleMode } from "vscode";
 // import reactLogo from "./assets/react.svg";
 import "./App.css";
+import Fuse from "fuse.js";
 
 // TODO: shift enter should create file regardless of index choice
 // TODO: clean up code and move this to a webviews folder instead
+
 // TODO: highlight search match range in name portion similar to emacs
+// TODO: Add fuzzy search option possibly with fusejs
+// const FUSE_OPTIONS = {
+//   isCaseSensitive: false,
+//   // includeScore: false,
+//   shouldSort: false,
+//   includeMatches: true,
+//   // findAllMatches: false,
+//   // minMatchCharLength: 1,
+//   // location: 0,
+//   threshold: 0.3, // Probably should make this a configuration option 0 for exact match upto 1 for fuzziness upto taste
+//   // distance: 100,
+//   // useExtendedSearch: false,
+//   // ignoreLocation: false,
+//   // ignoreFieldNorm: false,
+//   // fieldNormWeight: 1,
+//   keys: [
+//     "name",
+//   ]
+// };
 
 // @ts-ignore
 const vscode = acquireVsCodeApi();
@@ -21,6 +42,8 @@ function App() {
 
   const [lengthLongestFileOrDirectory, setLengthLongestFileOrDirectory] =
     useState<number>(-1);
+
+  // const [fuseInstance, setFuseInstance] = useState<any>(null);
 
   const [indexChoice, setIndexChoice] = useState<number>(0);
   const [iv, setIV] = useState<string>("");
@@ -120,7 +143,6 @@ function App() {
       }
     }
 
-
     let fdl = -1;
     // find longest file or dir name
     for (let i = 0; i < x.length; ++i) {
@@ -132,6 +154,8 @@ function App() {
 
     x.pop();
     // console.log(x);
+
+    // setFuseInstance(new Fuse(x, FUSE_OPTIONS));
 
     setDirData(x);
     setDirDataFiltered(x);
@@ -152,6 +176,9 @@ function App() {
   function InputOnChange(e) {
     // console.log(e.target.value);
     setIV(e.target.value);
+    // if (fuseInstance !== null) {
+    //   console.log("Fuse res - ", fuseInstance.search(e.target.value));
+    // }
 
     if (e.target.value === "") {
       setDirDataFiltered(dirData);
@@ -159,7 +186,7 @@ function App() {
       window.scrollBy(0, 0);
     } else {
       let x = [];
-      for (let i = 0; i < dirData.length - 1; ++i) {
+      for (let i = 0; i < dirData.length; ++i) {
         // console.log(dirData[i].name, e.target.value);
         if (
           dirData[i].name.toLowerCase().includes(e.target.value.toLowerCase())
