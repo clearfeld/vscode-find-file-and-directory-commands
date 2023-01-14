@@ -5,6 +5,7 @@
 * [fd](https://github.com/sharkdp/fd)
 * [ripgrep](https://github.com/BurntSushi/ripgrep)
 * [fzf](https://github.com/junegunn/fzf)
+* [jq](https://github.com/stedolan/jq)
 
 ## Find File (emacs styled)
 
@@ -32,3 +33,15 @@
 | `Find File - FD (Editor)` | Editor version of above |
 | `Find File - FD from project root (GIT)(Panel)` | fd from the project root (git project root (top-level)) |
 | `Find File - FD from project root (GIT)(Editor)` | Editor version of above |
+
+## Find File (ripgrep)
+
+| Find File (Ripgrep) | 
+| ---------------------- |
+| ![VSCodium ripgrep find file](https://user-images.githubusercontent.com/49600278/212494268-72fca489-7806-4d24-957a-aba33207c9db.gif) |
+
+### Commands
+
+| Command | Description |
+| ------- | ----------- |
+| `Find File - Ripgrep (rg) (Panel)` | Use ripgrep to search file contents from directory of active editor |
