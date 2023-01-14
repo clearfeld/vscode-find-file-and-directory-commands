@@ -533,7 +533,7 @@ class RGViewProvider implements vscode.WebviewViewProvider {
     const scriptUri = webview.asWebviewUri(
       vscode.Uri.joinPath(
         this._extensionUri,
-        "src/webviews/rg/dist",
+        "webviews_builds/rg/dist",
         "minibuffer-find-file.js"
       )
     );
@@ -541,7 +541,7 @@ class RGViewProvider implements vscode.WebviewViewProvider {
     const styleUri = webview.asWebviewUri(
       vscode.Uri.joinPath(
         this._extensionUri,
-        "src/webviews/rg/dist/assets",
+        "webviews_builds/rg/dist/assets",
         "style.css"
       )
     );

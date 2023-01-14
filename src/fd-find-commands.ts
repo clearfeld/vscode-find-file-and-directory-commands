@@ -384,7 +384,7 @@ class FDViewProvider implements vscode.WebviewViewProvider {
     const scriptUri = webview.asWebviewUri(
       vscode.Uri.joinPath(
         this._extensionUri,
-        "src/webviews/fd/dist",
+        "webviews_builds/fd/dist",
         "minibuffer-find-file.js"
       )
     );
@@ -392,7 +392,7 @@ class FDViewProvider implements vscode.WebviewViewProvider {
     const styleUri = webview.asWebviewUri(
       vscode.Uri.joinPath(
         this._extensionUri,
-        "src/webviews/fd/dist/assets",
+        "webviews_builds/fd/dist/assets",
         "style.css"
       )
     );
