@@ -1,0 +1,148 @@
+.clearfeld-minibuffer-find-file__input-line {
+  position: fixed;
+  top: 0;
+  width: 100%;
+
+  background-color: var(--vscode-editor-background);
+  color: var(--vscode-symbolIcon-variableForeground);
+
+  white-space: pre;
+
+  display: flex;
+  align-items: center;
+}
+
+.clearfeld-minibuffer-find-file__input {
+  font-family: var(--vscode-editor-font-family);
+  font-size: var(--vscode-editor-font-size);
+  padding: 0 !important;
+
+  background-color: transparent !important;
+  outline: none !important;
+  border: none !important;
+  margin: 0 !important;
+
+  position: relative;
+  top: -0.125rem;
+  /* // padding: 2px 0px 4px 4px !important; */
+}
+
+/* .clearfeld-minibuffer-find-file__results-wrapper {
+  padding-top: 1.25rem;
+} */
+
+.clearfeld-minibuffer-find-file__result-row {
+  cursor: pointer;
+  white-space: nowrap;
+  color: var(--vscode-editor-foreground);
+}
+
+.clearfeld-minibuffer-find-file__result-row-char-highlight {
+  color: var(--vscode-charts-blue) !important;
+}
+
+.clearfeld-minibuffer-find-file__result-row:hover {
+  background-color: var(--vscode-editorWidget-background);
+}
+
+.clearfeld-minibuffer-find-file__result-current-selection {
+  background-color: var(--vscode-editorWidget-background);
+}
+
+.clearfeld-minibuffer-find-file__result-subsegment-pre {
+  font-family: var(--vscode-editor-font-family);
+  margin: 0;
+  padding: 0;
+  display: contents;
+}
+
+.clearfeld-minibuffer-find-file__result-subsegment-pre-date {
+  color: var(--vscode-charts-blue);
+}
+.clearfeld-minibuffer-find-file__result-subsegment-pre-size {
+  color: var(--vscode-charts-yellow);
+}
+.clearfeld-minibuffer-find-file__result-subsegment-pre-permissions {
+  color: var(--vscode-charts-green);
+}
+
+
+pre {
+  font-family: var(--vscode-editor-font-family);
+  font-size: var(--vscode-editor-font-size);
+
+  margin: 0;
+  padding: 0;
+}
+
+/* TODO: CLEAN: rename these classes */
+
+.clearfeld-minibuffer-find-file__input-line {
+  position: fixed;
+  top: 0;
+  width: 100%;
+
+  background-color: var(--vscode-editor-background);
+  color: var(--vscode-symbolIcon-variableForeground);
+
+  white-space: pre;
+
+  display: flex;
+  align-items: center;
+}
+
+.clearfeld-minibuffer-find-file__input {
+  font-family: var(--vscode-editor-font-family);
+  font-size: var(--vscode-editor-font-size);
+  padding: 0 !important;
+
+  background-color: transparent !important;
+  outline: none !important;
+  border: none !important;
+  margin: 0 !important;
+
+  position: relative;
+  top: -0.125rem;
+  /* // padding: 2px 0px 4px 4px !important; */
+}
+
+.clearfeld-minibuffer-find-file__results-wrapper {
+  padding-top: 1.25rem;
+}
+
+.clearfeld-minibuffer-find-file__result-row {
+  cursor: pointer;
+  white-space: nowrap;
+}
+.clearfeld-minibuffer-find-file__result-row:hover {
+  background-color: var(--vscode-editorWidget-background);
+}
+
+.clearfeld-minibuffer-find-file__result-current-selection {
+  background-color: var(--vscode-editorWidget-background);
+}
+
+
+.clearfeld-webview-consult-line__list-search-result-row {
+  display: flex;
+}
+.clearfeld-webview-consult-line__list-search-result-line-number-color-below {
+  color: var(--vscode-editorLineNumber-foreground);
+}
+.clearfeld-webview-consult-line__list-search-result-line-number-color-above {
+  color: var(--vscode-charts-orange);
+}
+
+.clearfeld-webview-consult-line__list-search-result-file-path {
+  color: var(--vscode-charts-blue);
+}
+.clearfeld-webview-consult-line__list-search-result-line {
+  color: var(--vscode-charts-green);
+}
+
+.clearfeld-webview-consult-line__list-search-result-highlight {
+  background-color: var(--vscode-editor-findMatchHighlightBackground);
+}
+.clearfeld-webview-consult-line__list-search-result-current-highlight {
+  background-color: var(--vscode-editor-findMatchBackground);
+}

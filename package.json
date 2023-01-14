@@ -1,7 +1,7 @@
 {
   "name": "find-file-and-directory-commands",
   "description": "Additional find file and directory commands.",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "publisher": "clearfeld",
   "icon": "assets/icon.png",
   "private": true,
@@ -39,6 +39,12 @@
           "title": "Minibuffer",
           "icon": "fancy.icon",
           "when": "clearfeld.findFileFDPanel"
+        },
+        {
+          "id": "clearfeld-minibuffer-find-file-rg-view",
+          "title": "Minibuffer",
+          "icon": "fancy.icon",
+          "when": "clearfeld.findFileRGPanel"
         }
       ]
     },
@@ -57,6 +63,14 @@
           "id": "clearfeld.findFileFDView",
           "name": "File Open",
           "when": "clearfeld.findFileFDPanel"
+        }
+      ],
+      "clearfeld-minibuffer-find-file-rg-view": [
+        {
+          "type": "webview",
+          "id": "clearfeld.findFileRGView",
+          "name": "File Open",
+          "when": "clearfeld.findFileRGPanel"
         }
       ]
     },
@@ -90,6 +104,11 @@
         "command": "clearfeld.findFileFDGitRootPanel",
         "category": "clearfeld",
         "title": "Find File - FD from project root (GIT)(Panel)"
+      },
+      {
+        "command": "clearfeld.findFileRGPanel",
+        "category": "clearfeld",
+        "title": "Find File - Ripgrep (rg) (Panel)"
       }
     ],
     "configuration": {
