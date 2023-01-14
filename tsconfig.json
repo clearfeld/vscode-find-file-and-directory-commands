@@ -8,5 +8,5 @@
     "strict": true,
     "rootDir": "src"
   },
-  "exclude": ["node_modules", ".vscode-test", "minibuffer-find-file"]
+  "exclude": ["node_modules", ".vscode-test", "minibuffer-find-file", "src\\webviews\\"]
 }

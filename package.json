@@ -20,7 +20,9 @@
   "activationEvents": [
     "onView:emacs.findFileView",
     "onCommand:emacs.findFileEditor",
-    "onCommand:emacs.findFilePanel"
+    "onCommand:emacs.findFilePanel",
+    "onCommand:clearfeld.findFileFDEditor",
+    "onCommand:clearfeld.findFileFDPanel"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -31,6 +33,12 @@
           "title": "Minibuffer",
           "icon": "fancy.icon",
           "when": "emacs.findFilePanel"
+        },
+        {
+          "id": "clearfeld-minibuffer-find-file-fd-view",
+          "title": "Minibuffer",
+          "icon": "fancy.icon",
+          "when": "clearfeld.findFileFDPanel"
         }
       ]
     },
@@ -41,6 +49,14 @@
           "id": "emacs.findFileView",
           "name": "File Open",
           "when": "emacs.findFilePanel"
+        }
+      ],
+      "clearfeld-minibuffer-find-file-fd-view": [
+        {
+          "type": "webview",
+          "id": "clearfeld.findFileFDView",
+          "name": "File Open",
+          "when": "clearfeld.findFileFDPanel"
         }
       ]
     },
@@ -54,6 +70,26 @@
         "command": "emacs.findFilePanel",
         "category": "clearfeld",
         "title": "Find File (Panel)"
+      },
+      {
+        "command": "clearfeld.findFileFDEditor",
+        "category": "clearfeld",
+        "title": "Find File - FD (Editor)"
+      },
+      {
+        "command": "clearfeld.findFileFDPanel",
+        "category": "clearfeld",
+        "title": "Find File - FD (Panel)"
+      },
+      {
+        "command": "clearfeld.findFileFDGitRootEditor",
+        "category": "clearfeld",
+        "title": "Find File - FD from project root (GIT)(Editor)"
+      },
+      {
+        "command": "clearfeld.findFileFDGitRootPanel",
+        "category": "clearfeld",
+        "title": "Find File - FD from project root (GIT)(Panel)"
       }
     ],
     "configuration": {
@@ -74,6 +110,7 @@
     "watch": "tsc -w -p ./"
   },
   "devDependencies": {
+    "@types/node": "^18.11.18",
     "@types/react": "^18.0.25",
     "@types/react-dom": "^18.0.8",
     "@types/vscode": "^1.73.0",
