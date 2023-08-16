@@ -100,10 +100,13 @@ async function DetermineCMDAndDefaultDir(): Promise<[string, string]> {
   let cmd = `cd && ${lsd_command}`;
 
   if (defaultDir !== null) {
-    cmd = `${lsd_command} ${defaultDir}`;
+    cmd = `${lsd_command} "${defaultDir}"`;
   } else {
-    defaultDir = EXT_DefaultDirectory;
+    defaultDir = EXT_DefaultDirectory; // "\"" + EXT_DefaultDirectory + "\"";
+    cmd = EXT_DefaultDirectory.charAt(0) + EXT_DefaultDirectory.charAt(1) + " && cd " + EXT_DefaultDirectory + " && " + cmd;
   }
+
+  // console.warn(cmd, EXT_DefaultDirectory, defaultDir);
 
   return [cmd, defaultDir];
 }
@@ -113,6 +116,8 @@ function PostCPResultsToView(
   cmd: string,
   dir: string
 ): void {
+  console.warn("REFACTOR - ", cmd);
+
   cp.exec(cmd, (err: any, stdout: any, stderr: any) => {
     // console.log("stdout: " + stdout);
     // console.log("stderr: " + stderr);
@@ -123,17 +128,29 @@ function PostCPResultsToView(
       // certain files couldn't be accessed and displayed?
 
       const result = stdout.split(/\r?\n/);
+      let res = result; // JSON.stringify(result);
+      if(res[0].charAt(1) === ":") {
+        res.shift();
+      }
+      res = JSON.stringify(res);
+
       view.postMessage({
         command: "refactor",
-        data: JSON.stringify(result),
+        data: res,
         directory: JSON.stringify(dir),
       });
       // }
     } else {
       const result = stdout.split(/\r?\n/);
+      let res = result;
+      if(res[0].charAt(1) === ":") {
+        res.shift();
+      }
+      res = JSON.stringify(res);
+
       view.postMessage({
         command: "refactor",
-        data: JSON.stringify(result),
+        data: res,
         directory: JSON.stringify(dir),
       });
     }
@@ -205,8 +222,16 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
           break;
 
         case "Enter": {
+          let dir_val = data.value;
+          if(dir_val.length <= 3) {
+            //
+          } else {
+            dir_val = "\"" + dir_val + "\"";
+          }
+
+          console.log(`${lsd_command} ${dir_val}`);
           cp.exec(
-            `${lsd_command} ${data.value}`,
+            `${lsd_command} ${dir_val}`,
             (err: any, stdout: any, stderr: any) => {
               // console.log("stderr: " + stderr);
               if (err) {
@@ -218,7 +243,7 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
                   data: JSON.stringify(result),
                 });
               } else {
-                // console.log("stdout - " + stdout);
+                console.log("stdout - " + stdout);
                 // get current theme properties color
                 // respect theme color choice
                 // const color = new vscode.ThemeColor('badge.background');
@@ -301,9 +326,17 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
           break;
 
         case "Enter":
+          let dir_val = data.value;
+          if(dir_val.length <= 3) {
+            //
+          } else {
+            dir_val = "\"" + dir_val + "\"";
+          }
+
+          console.log(`${lsd_command} ${dir_val}`);
           {
             cp.exec(
-              `${lsd_command} ${data.value}`,
+              `${lsd_command} ${dir_val}`,
               (err: any, stdout: any, stderr: any) => {
                 // console.log("stderr: " + stderr);
                 if (err) {

@@ -251,13 +251,19 @@ function App() {
 
       if (iv.includes(":")) {
         // most likely a change directory attempt
+
+        let iv_c = iv;
+        if(iv_c.charAt(2) !== "\\") {
+          iv_c += "\\";
+        }
+
         vscode.postMessage({
           type: "Enter",
-          value: iv,
+          value: iv_c,
           pick_type: "directory",
         });
 
-        currentDir.current = iv;
+        currentDir.current = iv_c;
         setIV("");
         return;
       }
