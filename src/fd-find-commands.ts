@@ -171,8 +171,10 @@ async function DetermineCMDAndDefaultDir(
     defaultDir = EXT_DefaultDirectory;
   }
 
-  cmd = `${defaultDir.substring(0, 2)} && cd ${defaultDir} && ${fd_command}`;
+  // cmd = `${defaultDir.substring(0, 2)} && cd ${defaultDir} && ${fd_command}`;
+ cmd = `cd ${defaultDir} && ${fd_command}`;
 
+  console.log("wut", cmd, defaultDir);
   return [cmd, defaultDir];
 }
 

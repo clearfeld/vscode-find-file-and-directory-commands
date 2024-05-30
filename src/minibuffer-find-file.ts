@@ -97,7 +97,10 @@ export function minibuffer_find_file__activate(
 
 async function DetermineCMDAndDefaultDir(): Promise<[string, string]> {
   let defaultDir = await pathToCurrentDirectory();
-  let cmd = `cd && ${lsd_command}`;
+  // win32
+  // let cmd = `cd && ${lsd_command}`;
+  // unix
+  let cmd = `pwd && ${lsd_command}`;
 
   if (defaultDir !== null) {
     cmd = `${lsd_command} "${defaultDir}"`;

@@ -203,7 +203,9 @@ async function DetermineCMDAndDefaultDir(
     defaultDir = EXT_DefaultDirectory;
   }
 
-  cmd = `${defaultDir.substring(0, 2)} && cd ${defaultDir} && ${fd_command}`;
+  // cmd = `${defaultDir.substring(0, 2)} && cd ${defaultDir} && ${fd_command}`;
+
+  cmd = `cd ${defaultDir} && ${fd_command}`;
 
   return [cmd, defaultDir];
 }
@@ -392,9 +394,13 @@ class RGViewProvider implements vscode.WebviewViewProvider {
             // console.log(text);
             // let cmd = `echo ${text} | rg "${data.value}" "${defaultDir}" --json -i`;
 
-            let cd_cmd = `${data.directory.substring(0, 2)} && cd ${
+            //let cd_cmd = `${data.directory.substring(0, 2)} && cd ${
+             // data.directory
+            //}`;
+            let cd_cmd = `cd ${
               data.directory
             }`;
+            
             let cmd = `${cd_cmd} && rg "${data.value}" . --vimgrep --json -i | jq -s ".[] | select(.type==\\"match\\")" -c`; // && cmd
 
             // console.log(cmd);
