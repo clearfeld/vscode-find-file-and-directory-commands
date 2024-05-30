@@ -4,6 +4,8 @@ import * as Path from "path";
 // @ts-ignore
 import * as cp from "child_process";
 
+const cplatform = process.platform;
+
 const lsd_command =
   "lsd --icon=never -al --group-directories-first --color=never --blocks=permission,size,date,name";
 
@@ -97,7 +99,13 @@ export function minibuffer_find_file__activate(
 
 async function DetermineCMDAndDefaultDir(): Promise<[string, string]> {
   let defaultDir = await pathToCurrentDirectory();
-  let cmd = `cd && ${lsd_command}`;
+
+  let cmd = "";
+  if (cplatform === "win32") {
+    cmd = `cd && ${lsd_command}`;
+  } else {
+    cmd = `pwd && ${lsd_command}`;
+  }
 
   if (defaultDir !== null) {
     cmd = `${lsd_command} "${defaultDir}"`;

@@ -5,12 +5,17 @@ import { FixedSizeList as List } from "react-window";
 import { Fzf } from "fzf";
 import { DebugConsoleMode } from "vscode";
 
+const unix_directory_slash = "/";
+const win32_directory_slash = "\\";
+let directory_slash = "\\";
+
 // @ts-ignore
 const vscode = acquireVsCodeApi();
 
 function App() {
   const inputRef = useRef(null);
   const listRef = useRef(null);
+
 
   const [windowDimensions, setWindowDimensions] = useState(
     getWindowDimensions()
@@ -65,6 +70,13 @@ function App() {
           console.log("REFACTOR", event.data);
 
           console.log("Refactor event.data.directory - ", event.data.directory);
+
+          if (event.data.system === "win32") {
+            directory_slash = win32_directory_slash;
+          } else {
+            directory_slash = unix_directory_slash;
+          }
+
           if (
             event.data.directory !== null &&
             event.data.directory !== undefined
@@ -79,14 +91,14 @@ function App() {
             // sometimes there's an empty string at the end remove it if found
             x.pop();
           }
-          if(x[0] === "") {
+          if (x[0] === "") {
             x.shift();
 
             if (event.data.system === "win32") {
               // parse out actual root file path -- assuming git rev-parse --show-toplevel subsitution
               let cd = x[0].substr(x[0].indexOf(">") + 1, x[0].length);
               cd = cd.substr(2, cd.length - 17).trim();
-              currentDir.current = cd.replaceAll("/", "\\");
+              currentDir.current = cd.replaceAll("/", directory_slash);
 
               x.shift();
             } else {
@@ -137,9 +149,9 @@ function App() {
 
       let file_path;
       if (typeof dl === "string" || dl instanceof String) {
-        file_path = currentDir.current + "\\" + dl;
+        file_path = currentDir.current + directory_slash + dl;
       } else {
-        file_path = currentDir.current + "\\" + dl.item;
+        file_path = currentDir.current + directory_slash + dl.item;
       }
 
       vscode.postMessage({
@@ -178,8 +190,8 @@ function App() {
 
   function GetCurrentDir(): string {
     let x = currentDir.current;
-    if (x[x.length - 1] !== "\\") {
-      x += "\\";
+    if (x[x.length - 1] !== directory_slash) {
+      x += directory_slash;
     }
     return x;
   }
@@ -220,7 +232,6 @@ function App() {
           >
             {({ index, style, data }) => {
               const line = data[index];
-
               let fzf_results = false;
               // @ts-ignore
               if (typeof line === "string" || line instanceof String) {
