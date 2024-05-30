@@ -4,6 +4,8 @@ import * as Path from "path";
 // @ts-ignore
 import * as cp from "child_process";
 
+const cplatform = process.platform;
+
 // const fd_files__git_root_Win32 = "@echo off && for /f %a in ('git rev-parse --show-toplevel') do cd %a && @echo on";
 const git_root_Win32 =
   "for /f %a in ('git rev-parse --show-toplevel') do cd %a";
@@ -203,9 +205,11 @@ async function DetermineCMDAndDefaultDir(
     defaultDir = EXT_DefaultDirectory;
   }
 
-  // cmd = `${defaultDir.substring(0, 2)} && cd ${defaultDir} && ${fd_command}`;
-
-  cmd = `cd ${defaultDir} && ${fd_command}`;
+  if (cplatform === "win32") {
+    cmd = `${defaultDir.substring(0, 2)} && cd ${defaultDir} && ${fd_command}`;
+  } else {
+    cmd = `cd ${defaultDir} && ${fd_command}`;
+  }
 
   return [cmd, defaultDir];
 }
@@ -394,13 +398,17 @@ class RGViewProvider implements vscode.WebviewViewProvider {
             // console.log(text);
             // let cmd = `echo ${text} | rg "${data.value}" "${defaultDir}" --json -i`;
 
-            //let cd_cmd = `${data.directory.substring(0, 2)} && cd ${
-             // data.directory
-            //}`;
-            let cd_cmd = `cd ${
-              data.directory
-            }`;
-            
+            let cd_cmd = "";
+            if (cplatform === "win32") {
+              cd_cmd = `${data.directory.substring(0, 2)} && cd ${
+                data.directory
+              }`;
+            } else {
+              cd_cmd = `cd ${
+                data.directory
+              }`;
+            }
+
             let cmd = `${cd_cmd} && rg "${data.value}" . --vimgrep --json -i | jq -s ".[] | select(.type==\\"match\\")" -c`; // && cmd
 
             // console.log(cmd);

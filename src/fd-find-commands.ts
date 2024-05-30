@@ -6,6 +6,8 @@ import * as cp from "child_process";
 
 const fd_files = "fd --type f";
 
+const cplatform = process.platform;
+
 // const fd_files__git_root_Win32 = "@echo off && for /f %a in ('git rev-parse --show-toplevel') do cd %a && @echo on";
 const git_root_Win32 =
   "for /f %a in ('git rev-parse --show-toplevel') do cd %a";
@@ -106,7 +108,7 @@ export function fd_find__activate(context: vscode.ExtensionContext) {
         }
 
         let fd_command;
-        if (process.platform === "win32") {
+        if (cplatform === "win32") {
           fd_command = git_root_Win32 + " && " + fd_files;
         } else {
           fd_command = git_root_Unix + " && " + fd_files;
@@ -143,7 +145,8 @@ export function fd_find__activate(context: vscode.ExtensionContext) {
         }
 
         let fd_command;
-        if (process.platform === "win32") {
+        console.log("CLP", cplatform, "win32");
+        if (cplatform === "win32") {
           fd_command = git_root_Win32 + " && " + fd_files;
         } else {
           fd_command = git_root_Unix + " && " + fd_files;
@@ -171,8 +174,11 @@ async function DetermineCMDAndDefaultDir(
     defaultDir = EXT_DefaultDirectory;
   }
 
-  // cmd = `${defaultDir.substring(0, 2)} && cd ${defaultDir} && ${fd_command}`;
- cmd = `cd ${defaultDir} && ${fd_command}`;
+  if (cplatform === "win32") {
+    cmd = `${defaultDir.substring(0, 2)} && cd ${defaultDir} && ${fd_command}`;
+  } else {
+    cmd = `cd ${defaultDir} && ${fd_command}`;
+  }
 
   console.log("wut", cmd, defaultDir);
   return [cmd, defaultDir];
@@ -184,7 +190,7 @@ function PostCPResultsToView(
   dir: string
 ): void {
   let system: string;
-  if (process.platform === "win32") {
+  if (cplatform === "win32") {
     system = "win32";
   } else {
     system = "unix";

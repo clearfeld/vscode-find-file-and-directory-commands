@@ -5,10 +5,9 @@ import { FixedSizeList as List } from "react-window";
 import { Fzf } from "fzf";
 import { DebugConsoleMode } from "vscode";
 
-// unix
-const directory_slash = "/";
-// windows
-// const directory_slash = "\\";
+const unix_directory_slash = "/";
+const win32_directory_slash = "\\";
+let directory_slash = "\\";
 
 // @ts-ignore
 const vscode = acquireVsCodeApi();
@@ -17,7 +16,6 @@ function App() {
   const inputRef = useRef(null);
   const listRef = useRef(null);
 
-  console.log("testing 123");
 
   const [windowDimensions, setWindowDimensions] = useState(
     getWindowDimensions()
@@ -72,6 +70,13 @@ function App() {
           console.log("REFACTOR", event.data);
 
           console.log("Refactor event.data.directory - ", event.data.directory);
+
+          if (event.data.system === "win32") {
+            directory_slash = win32_directory_slash;
+          } else {
+            directory_slash = unix_directory_slash;
+          }
+
           if (
             event.data.directory !== null &&
             event.data.directory !== undefined
@@ -86,7 +91,7 @@ function App() {
             // sometimes there's an empty string at the end remove it if found
             x.pop();
           }
-          if(x[0] === "") {
+          if (x[0] === "") {
             x.shift();
 
             if (event.data.system === "win32") {
@@ -97,10 +102,8 @@ function App() {
 
               x.shift();
             } else {
-              console.log("x  - ", x[0]);
               currentDir.current = x[0];
               x.shift();
-              console.log("x  not 0- ", x);
             }
           }
 
@@ -126,7 +129,6 @@ function App() {
   }
 
   function InputOnChange(e) {
-    console.log(e.target.value);
     setIV(e.target.value);
     setDataFiltered(fzfInstance.find(e.target.value));
     setIndexChoice(0);
@@ -230,7 +232,6 @@ function App() {
           >
             {({ index, style, data }) => {
               const line = data[index];
-console.log("line", line);
               let fzf_results = false;
               // @ts-ignore
               if (typeof line === "string" || line instanceof String) {
