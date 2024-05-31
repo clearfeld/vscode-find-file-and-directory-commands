@@ -91,9 +91,15 @@ function App() {
             // sometimes there's an empty string at the end remove it if found
             x.pop();
           }
+
+          // mac unix if root fd
+          if (event.data.system !== "win32" && event.data.root) {
+            currentDir.current = x[0];
+            x.shift();
+          }
+
           if (x[0] === "") {
             x.shift();
-
             if (event.data.system === "win32") {
               // parse out actual root file path -- assuming git rev-parse --show-toplevel subsitution
               let cd = x[0].substr(x[0].indexOf(">") + 1, x[0].length);

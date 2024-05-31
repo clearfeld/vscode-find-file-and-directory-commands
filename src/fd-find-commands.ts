@@ -61,7 +61,7 @@ export function fd_find__activate(context: vscode.ExtensionContext) {
 
 			const [cmd, defaultDir] = await DetermineCMDAndDefaultDir(fd_files);
 
-			PostCPResultsToView(provider._panel?.webview, cmd, defaultDir);
+			PostCPResultsToView(provider._panel?.webview, cmd, defaultDir, false);
 		}),
 	);
 
@@ -90,7 +90,7 @@ export function fd_find__activate(context: vscode.ExtensionContext) {
 
 			provider._view.show(true);
 
-			PostCPResultsToView(provider._view?.webview, cmd, defaultDir);
+			PostCPResultsToView(provider._view?.webview, cmd, defaultDir, false);
 		}),
 	);
 
@@ -114,7 +114,7 @@ export function fd_find__activate(context: vscode.ExtensionContext) {
 
 				const [cmd, defaultDir] = await DetermineCMDAndDefaultDir(fd_command);
 
-				PostCPResultsToView(provider._panel?.webview, cmd, defaultDir);
+				PostCPResultsToView(provider._panel?.webview, cmd, defaultDir, true);
 			},
 		),
 	);
@@ -143,7 +143,7 @@ export function fd_find__activate(context: vscode.ExtensionContext) {
 				}
 
 				let fd_command = "";
-				console.log("CLP", cplatform, "win32");
+				console.log("CLP", cplatform);
 				if (cplatform === "win32") {
 					fd_command = `${git_root_Win32} && ${fd_files}`;
 				} else {
@@ -154,7 +154,7 @@ export function fd_find__activate(context: vscode.ExtensionContext) {
 
 				provider._view.show(true);
 
-				PostCPResultsToView(provider._view?.webview, cmd, defaultDir);
+				PostCPResultsToView(provider._view?.webview, cmd, defaultDir, true);
 			},
 		),
 	);
@@ -172,13 +172,17 @@ async function DetermineCMDAndDefaultDir(
 		defaultDir = EXT_DefaultDirectory;
 	}
 
+	console.log(defaultDir, `\n`, defaultDir.substring(0, 2), "\n" );
 	if (cplatform === "win32") {
 		cmd = `${defaultDir.substring(0, 2)} && cd ${defaultDir} && ${fd_command}`;
 	} else {
+		// cmd = `cd ${defaultDir} && ${fd_command}`;
+		// cmd = `cd cd $(git rev-parse --show-toplevel) && ${fd_command}`;
+		// cmd = `${fd_command}`;	
 		cmd = `cd ${defaultDir} && ${fd_command}`;
 	}
 
-	console.log("wut", cmd, defaultDir);
+	console.log("wut", cmd, "\n\n", defaultDir);
 	return [cmd, defaultDir];
 }
 
@@ -186,6 +190,7 @@ function PostCPResultsToView(
 	view: vscode.Webview,
 	cmd: string,
 	dir: string,
+	root: boolean,
 ): void {
 	let system: string;
 	if (cplatform === "win32") {
@@ -194,6 +199,7 @@ function PostCPResultsToView(
 		system = "unix";
 	}
 
+	console.log("testing ", cmd);
 	cp.exec(cmd, (err: ExecException | null, stdout: string, stderr: string) => {
 		// console.log("stdout: " + stdout);
 		// console.log("stderr: " + stderr);
@@ -206,6 +212,7 @@ function PostCPResultsToView(
 				data: JSON.stringify(result),
 				directory: JSON.stringify(dir),
 				system: system,
+				root: root,
 			});
 		} else {
 			const result = stdout.split(/\r?\n/);
@@ -214,6 +221,7 @@ function PostCPResultsToView(
 				data: JSON.stringify(result),
 				directory: JSON.stringify(dir),
 				system: system,
+				root: root,
 			});
 		}
 	});
