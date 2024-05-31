@@ -3,15 +3,6 @@ import { minibuffer_find_file__activate } from "./minibuffer-find-file";
 import { fd_find__activate } from "./fd-find-commands";
 import { rg_find_file__activate } from "./rg-find-file-commands";
 
-// async function pathToCurrentDirectory(): Promise<string | null> {
-//   const currentEditor = vscode.window.activeTextEditor;
-//   if (currentEditor) {
-//     return Path.dirname(currentEditor.document.uri.fsPath);
-//   }
-
-//   return null;
-// }
-
 // let EXT_DefaultDirectory: string;
 // function PullConfigurationAndSet(): void {
 //   const emffc_config = vscode.workspace.getConfiguration(
