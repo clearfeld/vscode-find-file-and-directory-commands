@@ -6,6 +6,7 @@ import {
 	pathToCurrentDirectory,
 	ClosePanelOnCompletionIfNotInitiallyOpened,
 } from "./utils";
+import { ExecException } from "child_process";
 
 const cplatform = process.platform;
 
@@ -53,7 +54,7 @@ export function minibuffer_find_file__activate(
 				return;
 			}
 
-			let [cmd, defaultDir] = await DetermineCMDAndDefaultDir();
+			const [cmd, defaultDir] = await DetermineCMDAndDefaultDir();
 
 			PostCPResultsToView(provider._panel?.webview, cmd, defaultDir);
 		}),
@@ -104,13 +105,15 @@ async function DetermineCMDAndDefaultDir(): Promise<[string, string]> {
 		cmd = `${lsd_command} "${defaultDir}"`;
 	} else {
 		defaultDir = EXT_DefaultDirectory; // "\"" + EXT_DefaultDirectory + "\"";
-		cmd =
-			EXT_DefaultDirectory.charAt(0) +
-			EXT_DefaultDirectory.charAt(1) +
-			" && cd " +
-			EXT_DefaultDirectory +
-			" && " +
-			cmd;
+		// cmd =
+		// 	EXT_DefaultDirectory.charAt(0) +
+		// 	EXT_DefaultDirectory.charAt(1) +
+		// 	" && cd " +
+		// 	EXT_DefaultDirectory +
+		// 	" && " +
+		// 	cmd;
+
+		cmd = `${EXT_DefaultDirectory.charAt(0)}${EXT_DefaultDirectory.charAt(1)} && cd ${EXT_DefaultDirectory} && ${cmd}`;
 	}
 
 	// console.warn(cmd, EXT_DefaultDirectory, defaultDir);
@@ -125,7 +128,7 @@ function PostCPResultsToView(
 ): void {
 	console.warn("REFACTOR - ", cmd);
 
-	cp.exec(cmd, (err: any, stdout: any, stderr: any) => {
+	cp.exec(cmd, (err: ExecException | null, stdout: string, stderr: string) => {
 		// console.log("stdout: " + stdout);
 		// console.log("stderr: " + stderr);
 		if (err) {
@@ -135,7 +138,7 @@ function PostCPResultsToView(
 			// certain files couldn't be accessed and displayed?
 
 			const result = stdout.split(/\r?\n/);
-			let res = result; // JSON.stringify(result);
+			let res: string | string[] = result; // JSON.stringify(result);
 			if (res[0].charAt(1) === ":") {
 				res.shift();
 			}
@@ -149,7 +152,7 @@ function PostCPResultsToView(
 			// }
 		} else {
 			const result = stdout.split(/\r?\n/);
-			let res = result;
+			let res: string | string[] = result;
 			if (res[0].charAt(1) === ":") {
 				res.shift();
 			}
@@ -216,9 +219,9 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
 
 				case "CreateFile":
 					{
-						let buf = new Uint8Array();
-						let duri = vscode.Uri.file(data.directory + "\\" + data.value);
-						let throw_away = await vscode.workspace.fs.writeFile(duri, buf);
+						const buf = new Uint8Array();
+						const duri = vscode.Uri.file(`${data.directory}\\${data.value}`);
+						const throw_away = await vscode.workspace.fs.writeFile(duri, buf);
 						// @ts-ignore
 						const openPath = vscode.Uri.parse(duri);
 						vscode.workspace.openTextDocument(openPath).then((document) => {
@@ -233,16 +236,16 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
 					if (dir_val.length <= 3) {
 						//
 					} else {
-						dir_val = '"' + dir_val + '"';
+						dir_val = `"${dir_val}"`;
 					}
 
 					console.log(`${lsd_command} ${dir_val}`);
 					cp.exec(
 						`${lsd_command} ${dir_val}`,
-						(err: any, stdout: any, stderr: any) => {
+						(err: ExecException | null, stdout: string, stderr: string) => {
 							// console.log("stderr: " + stderr);
 							if (err) {
-								console.log("stderr - error: " + err);
+								console.log("stderr - error: ", err);
 
 								const result = stdout.split(/\r?\n/);
 								this._panel?.webview.postMessage({
@@ -250,7 +253,7 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
 									data: JSON.stringify(result),
 								});
 							} else {
-								console.log("stdout - " + stdout);
+								console.log("stdout - ", stdout);
 								// get current theme properties color
 								// respect theme color choice
 								// const color = new vscode.ThemeColor('badge.background');
@@ -313,9 +316,9 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
 
 				case "CreateFile":
 					{
-						let buf = new Uint8Array();
-						let duri = vscode.Uri.file(data.directory + "\\" + data.value);
-						let throw_away = await vscode.workspace.fs.writeFile(duri, buf);
+						const buf = new Uint8Array();
+						const duri = vscode.Uri.file(`${data.directory}\\${data.value}`);
+						const throw_away = await vscode.workspace.fs.writeFile(duri, buf);
 						// @ts-ignore
 						const openPath = vscode.Uri.parse(duri);
 						vscode.workspace.openTextDocument(openPath).then((document) => {
@@ -333,40 +336,42 @@ class ColorsViewProvider implements vscode.WebviewViewProvider {
 					break;
 
 				case "Enter":
-					let dir_val = data.value;
-					if (dir_val.length <= 3) {
-						//
-					} else {
-						dir_val = '"' + dir_val + '"';
-					}
-
-					console.log(`${lsd_command} ${dir_val}`);
 					{
-						cp.exec(
-							`${lsd_command} ${dir_val}`,
-							(err: any, stdout: any, stderr: any) => {
-								// console.log("stderr: " + stderr);
-								if (err) {
-									// console.log("stderr - error: " + err, stdout);
-									const result = stdout.split(/\r?\n/);
-									this._view?.webview.postMessage({
-										command: "directory_change",
-										data: JSON.stringify(result),
-									});
-								} else {
-									// console.log("stdout - " + stdout);
-									// get current theme properties color
-									// respect theme color choice
-									// const color = new vscode.ThemeColor('badge.background');
+						let dir_val = data.value;
+						if (dir_val.length <= 3) {
+							//
+						} else {
+							dir_val = `"${dir_val}"`;
+						}
 
-									const result = stdout.split(/\r?\n/);
-									this._view?.webview.postMessage({
-										command: "directory_change",
-										data: JSON.stringify(result),
-									});
-								}
-							},
-						);
+						console.log(`${lsd_command} ${dir_val}`);
+						{
+							cp.exec(
+								`${lsd_command} ${dir_val}`,
+								(err: ExecException | null, stdout: string, stderr: string) => {
+									// console.log("stderr: " + stderr);
+									if (err) {
+										// console.log("stderr - error: " + err, stdout);
+										const result = stdout.split(/\r?\n/);
+										this._view?.webview.postMessage({
+											command: "directory_change",
+											data: JSON.stringify(result),
+										});
+									} else {
+										// console.log("stdout - " + stdout);
+										// get current theme properties color
+										// respect theme color choice
+										// const color = new vscode.ThemeColor('badge.background');
+
+										const result = stdout.split(/\r?\n/);
+										this._view?.webview.postMessage({
+											command: "directory_change",
+											data: JSON.stringify(result),
+										});
+									}
+								},
+							);
+						}
 					}
 					break;
 

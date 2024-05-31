@@ -6,6 +6,7 @@ import {
 	pathToCurrentDirectory,
 	ClosePanelOnCompletionIfNotInitiallyOpened,
 } from "./utils";
+import { ExecException } from "child_process";
 
 const fd_files = "fd --type f";
 
@@ -58,7 +59,7 @@ export function fd_find__activate(context: vscode.ExtensionContext) {
 				return;
 			}
 
-			let [cmd, defaultDir] = await DetermineCMDAndDefaultDir(fd_files);
+			const [cmd, defaultDir] = await DetermineCMDAndDefaultDir(fd_files);
 
 			PostCPResultsToView(provider._panel?.webview, cmd, defaultDir);
 		}),
@@ -85,7 +86,7 @@ export function fd_find__activate(context: vscode.ExtensionContext) {
 				return;
 			}
 
-			let [cmd, defaultDir] = await DetermineCMDAndDefaultDir(fd_files);
+			const [cmd, defaultDir] = await DetermineCMDAndDefaultDir(fd_files);
 
 			provider._view.show(true);
 
@@ -104,14 +105,14 @@ export function fd_find__activate(context: vscode.ExtensionContext) {
 					return;
 				}
 
-				let fd_command;
+				let fd_command = "";
 				if (cplatform === "win32") {
-					fd_command = git_root_Win32 + " && " + fd_files;
+					fd_command = `${git_root_Win32} && ${fd_files}`;
 				} else {
-					fd_command = git_root_Unix + " && " + fd_files;
+					fd_command = `${git_root_Unix} && ${fd_files}`;
 				}
 
-				let [cmd, defaultDir] = await DetermineCMDAndDefaultDir(fd_command);
+				const [cmd, defaultDir] = await DetermineCMDAndDefaultDir(fd_command);
 
 				PostCPResultsToView(provider._panel?.webview, cmd, defaultDir);
 			},
@@ -141,15 +142,15 @@ export function fd_find__activate(context: vscode.ExtensionContext) {
 					return;
 				}
 
-				let fd_command;
+				let fd_command = "";
 				console.log("CLP", cplatform, "win32");
 				if (cplatform === "win32") {
-					fd_command = git_root_Win32 + " && " + fd_files;
+					fd_command = `${git_root_Win32} && ${fd_files}`;
 				} else {
-					fd_command = git_root_Unix + " && " + fd_files;
+					fd_command = `${git_root_Unix} && ${fd_files}`;
 				}
 
-				let [cmd, defaultDir] = await DetermineCMDAndDefaultDir(fd_command);
+				const [cmd, defaultDir] = await DetermineCMDAndDefaultDir(fd_command);
 
 				provider._view.show(true);
 
@@ -163,7 +164,7 @@ async function DetermineCMDAndDefaultDir(
 	fd_command: string,
 ): Promise<[string, string]> {
 	let defaultDir = await pathToCurrentDirectory();
-	let cmd; //  = `cd && ${lsd_command}`;
+	let cmd = ""; //  = `cd && ${lsd_command}`;
 
 	if (defaultDir !== null) {
 		// cmd = `${lsd_command} ${defaultDir}`;
@@ -193,7 +194,7 @@ function PostCPResultsToView(
 		system = "unix";
 	}
 
-	cp.exec(cmd, (err: any, stdout: any, stderr: any) => {
+	cp.exec(cmd, (err: ExecException | null, stdout: string, stderr: string) => {
 		// console.log("stdout: " + stdout);
 		// console.log("stderr: " + stderr);
 		if (err) {
@@ -364,7 +365,7 @@ class FDViewProvider implements vscode.WebviewViewProvider {
 			vscode.Uri.joinPath(
 				this._extensionUri,
 				"webviews_builds/fd/dist",
-				"minibuffer-find-file.js",
+				"fd-find-file.js",
 			),
 		);
 

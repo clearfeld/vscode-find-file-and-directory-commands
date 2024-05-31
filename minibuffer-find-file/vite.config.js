@@ -20,7 +20,6 @@ export default defineConfig({
 },
 
   plugins: [
-    react(
-    ),
+    react(),
   ]
 });

@@ -6,6 +6,7 @@ import {
 	pathToCurrentDirectory,
 	ClosePanelOnCompletionIfNotInitiallyOpened,
 } from "./utils";
+import { ExecException } from "child_process";
 
 const cplatform = process.platform;
 
@@ -348,7 +349,7 @@ class RGViewProvider implements vscode.WebviewViewProvider {
 							cd_cmd = `cd ${data.directory}`;
 						}
 
-						let cmd = `${cd_cmd} && rg "${data.value}" . --vimgrep --json -i | jq -s ".[] | select(.type==\\"match\\")" -c`; // && cmd
+						const cmd = `${cd_cmd} && rg "${data.value}" . --vimgrep --json -i | jq -s ".[] | select(.type==\\"match\\")" -c`; // && cmd
 
 						// console.log(cmd);
 
@@ -356,10 +357,10 @@ class RGViewProvider implements vscode.WebviewViewProvider {
 
 						// F:\Dev\aspis\lib>rg "void" --vimgrep --json -i | jq -s ".[] | select(.type==\"match\")" -c
 
-						cp.exec(cmd, (err: any, stdout: any, stderr: any) => {
+						cp.exec(cmd, (err: ExecException | null, stdout: string, stderr: string) => {
 							// console.log("stderr: " + stderr);
 							if (err) {
-								console.log("stderr - error: " + err);
+								console.log("stderr - error: ", err);
 
 								this._view?.webview.postMessage({
 									command: "cp_results",
@@ -373,7 +374,7 @@ class RGViewProvider implements vscode.WebviewViewProvider {
 								// respect theme color choice
 								// const color = new vscode.ThemeColor('badge.background');
 
-								let _ripgrep_results = stdout.split(/\r?\n/);
+								const _ripgrep_results = stdout.split(/\r?\n/);
 								this._view?.webview.postMessage({
 									command: "cp_results",
 									data: _ripgrep_results, // JSON.stringify(result),

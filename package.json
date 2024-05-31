@@ -1,7 +1,7 @@
 {
   "name": "find-file-and-directory-commands",
   "description": "Additional find file and directory commands.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "clearfeld",
   "icon": "assets/icon.png",
   "private": true,
@@ -11,18 +11,11 @@
     "url": "https://github.com/clearfeld/vscode-find-file-and-directory-commands"
   },
   "engines": {
-    "vscode": "^1.73.0"
+    "vscode": "^1.89.0"
   },
   "extensionKind": [],
   "categories": [
     "Other"
-  ],
-  "activationEvents": [
-    "onView:emacs.findFileView",
-    "onCommand:emacs.findFileEditor",
-    "onCommand:emacs.findFilePanel",
-    "onCommand:clearfeld.findFileFDEditor",
-    "onCommand:clearfeld.findFileFDPanel"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -132,16 +125,10 @@
     "@types/node": "^18.11.18",
     "@types/react": "^18.0.25",
     "@types/react-dom": "^18.0.8",
-    "@types/vscode": "^1.73.0",
+    "@types/vscode": "^1.89.0",
     "@typescript-eslint/eslint-plugin": "^5.42.0",
     "@typescript-eslint/parser": "^5.42.0",
-    "@vitejs/plugin-react": "^2.2.0",
     "eslint": "^8.26.0",
-    "typescript": "^4.8.4",
-    "vite": "^3.2.3"
-  },
-  "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "typescript": "^4.8.4"
   }
 }
